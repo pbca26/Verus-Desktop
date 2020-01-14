@@ -1,4 +1,5 @@
 // main proc for Agama
+// TODO: CLEANUP THIS FILE
 
 const electron = require('electron');
 const {
@@ -40,9 +41,8 @@ let api = require('./routes/api');
 
 let guiapp = express();
 
-api.createAgamaDirs();
-
-let appConfig = api.loadLocalConfig(); // load app config
+//TODO: add more things here
+const { appConfig } = api
 
 /*const nativeCoindList = api.scanNativeCoindBins(); // dex related
 api.setVar('nativeCoindList', nativeCoindList);*/
@@ -112,11 +112,11 @@ api.log(`platform: ${osPlatform}`, 'init');
 api.log(`os_release: ${os.release()}`, 'init');
 api.log(`os_type: ${os.type()}`, 'init');
 
-// deprecated(?)
-appConfig['daemonOutput'] = false; // shadow setting
+// deprecated
+//appConfig['daemonOutput'] = false; // shadow setting
 
 let __defaultAppSettings = require('./routes/appConfig.js').config;
-__defaultAppSettings['daemonOutput'] = false; // shadow setting
+//__defaultAppSettings['daemonOutput'] = false; // shadow setting
 const _defaultAppSettings = __defaultAppSettings;
 
 api.log(`app started in ${(appConfig.general.main.dev || process.argv.indexOf('devmode') > -1 ? 'dev mode' : ' user mode')}`, 'init');
@@ -232,7 +232,7 @@ module.exports = guiapp;
 let agamaIcon;
 
 if (os.platform() === 'linux') {
-	agamaIcon = path.join(__dirname, '/assets/icons/agama_icons/128x128.png');
+	agamaIcon = path.join(__dirname, '/assets/icons/vrsc_512x512x32.png');
 }
 if (os.platform() === 'win32') {
 	agamaIcon = path.join(__dirname, '/assets/icons/vrsc.ico');

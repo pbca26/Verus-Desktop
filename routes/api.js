@@ -1,3 +1,5 @@
+// TODO: CLEANUP THIS FILE
+
 const electron = require('electron');
 const express = require('express');
 const app = electron.app;
@@ -11,6 +13,7 @@ api.assetChainPortsDefault = require('./ports.js');
 api._appConfig = require('./appConfig.js');
 api.chainParams = require('./chainParams')
 
+api.coinsInitializing = [];
 api.coindInstanceRegistry = {};
 api.coindStdout = {};
 api.guiLog = {};
@@ -62,16 +65,17 @@ api.appConfig = api._appConfig.config;
 api = require('./api/paths.js')(api);
 
 api.pathsAgama();
+api.pathsDaemons();
 
 // core
 api = require('./api/log.js')(api);
 api = require('./api/config.js')(api);
 api = require('./api/users.js')(api);
 api = require('./api/nameCommitments.js')(api);
+api = require('./api/init.js')(api);
 
+api.createAgamaDirs();
 api.appConfig = api.loadLocalConfig();
-
-api.pathsDaemons();
 
 api.appConfigSchema = api._appConfig.schema;
 api.defaultAppConfig = Object.assign({}, api.appConfig);
@@ -104,7 +108,6 @@ api = require('./api/electrum/createtx-multi.js')(api);
 api = require('./api/electrum/interest.js')(api);
 api = require('./api/electrum/listunspent.js')(api);
 api = require('./api/electrum/estimate.js')(api);
-api = require('./api/electrum/btcFees.js')(api);
 api = require('./api/electrum/insight.js')(api);
 api = require('./api/electrum/cache.js')(api);
 api = require('./api/electrum/proxy.js')(api);
@@ -113,6 +116,11 @@ api = require('./api/electrum/csv.js')(api);
 api = require('./api/electrum/utils.js')(api);
 api = require('./api/electrum/remove')(api);
 api = require('./api/electrum/send.js')(api);
+
+// general network calls
+api.networkFees = {}
+api = require('./api/network/fees/btc/btcFees')(api)
+api = require('./api/network/fees/networkFees')(api)
 
 //native
 api = require('./api/native/coins')(api);
@@ -131,6 +139,9 @@ api = require('./api/native/idRegistration.js')(api);
 api = require('./api/native/idRevocation.js')(api);
 api = require('./api/native/idInformation.js')(api);
 api = require('./api/native/idRecovery.js')(api);
+api = require('./api/native/signdata.js')(api);
+api = require('./api/native/verifydata.js')(api);
+api = require('./api/native/generate.js')(api);
 
 
 // dex
@@ -145,7 +156,6 @@ api = require('./api/coins.js')(api);*/
 api = require('./api/dashboardUpdate.js')(api);
 api = require('./api/binsUtils.js')(api);
 api = require('./api/downloadUtil.js')(api);
-api = require('./api/init.js')(api);
 api = require('./api/pin.js')(api);
 api = require('./api/downloadBins.js')(api);
 api = require('./api/downloadPatch.js')(api);
@@ -161,6 +171,7 @@ api = require('./api/auth.js')(api);
 api = require('./api/coindWalletKeys.js')(api);
 api = require('./api/addressBook.js')(api);
 api = require('./api/dice.js')(api);
+api = require('./api/system.js')(api);
 
 // elections
 api = require('./api/elections.js')(api);

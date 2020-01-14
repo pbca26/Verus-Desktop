@@ -2,7 +2,7 @@ const Promise = require('bluebird');
 const request = require('request');
 
 module.exports = (api) => {
-  api.native.callDaemon = (coin, cmd, params, token) => {
+  api.native.callDaemon = (coin, cmd, params, token) => {    
     return new Promise((resolve, reject) => {
       let _payload;
   
@@ -37,7 +37,7 @@ module.exports = (api) => {
   
       request(options, (error, response, body) => {
         const rpcJsonParsed = api.native.convertRpcJson(body)
-        
+
         if (rpcJsonParsed.msg === 'success') resolve(rpcJsonParsed.result);
         else reject(new Error(rpcJsonParsed.result))
       });

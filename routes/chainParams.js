@@ -58,12 +58,6 @@ const chainParams = {
 	HODL: {
 		ac_supply: 9999999,
 	},
-	ILN: {
-		ac_supply: 10000000000,
-		ac_cc: 2,
-		addnode: ['51.75.122.83'],
-	},
-  
 	MSHARK: {
 		ac_supply: 1400000,
 	},
@@ -214,15 +208,6 @@ const chainParams = {
 			'94.130.224.11',
 		],
 	},
-	LUMBER: {
-		ac_algo: 'verushash',
-		ac_veruspos: 80,
-		ac_cc: 2,
-		ac_supply: 1260000,
-		ac_reward: 470000000,
-		ac_halving: 2100000,
-		addnode: ['149.202.84.141'],
-	},
 	KSB: {
 		ac_supply: 1000000000,
 		ac_end: 1,
@@ -309,7 +294,7 @@ const chainParams = {
 	},
 	DP: {
 		ac_supply: 55500000,
-		ac_sapling: 1, 
+		ac_sapling: 1,
 		ac_public: 1,
 		ac_staked: 50,
 		ac_reward: 646400000,
