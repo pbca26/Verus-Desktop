@@ -117,11 +117,6 @@ api = require('./api/electrum/utils.js')(api);
 api = require('./api/electrum/remove')(api);
 api = require('./api/electrum/send.js')(api);
 
-// general network calls
-api.networkFees = {}
-api = require('./api/network/fees/btc/btcFees')(api)
-api = require('./api/network/fees/networkFees')(api)
-
 //native
 api = require('./api/native/coins')(api);
 api = require('./api/native/callDaemon')(api);
@@ -130,6 +125,7 @@ api = require('./api/native/balances')(api);
 api = require('./api/native/definedchains')(api);
 api = require('./api/native/info')(api);
 api = require('./api/native/mininginfo')(api);
+api = require('./api/native/getTransaction.js')(api);
 api = require('./api/native/transactions')(api);
 api = require('./api/native/zoperations')(api);
 api = require('./api/native/remove')(api);
@@ -142,6 +138,17 @@ api = require('./api/native/idRecovery.js')(api);
 api = require('./api/native/signdata.js')(api);
 api = require('./api/native/verifydata.js')(api);
 api = require('./api/native/generate.js')(api);
+api = require('./api/native/coinSupply.js')(api);
+api = require('./api/native/blockSubsidy.js')(api);
+api = require('./api/native/shieldcoinbase.js')(api);
+
+// general network calls
+api.networkFees = {}
+api.coinSupply = {}
+api = require('./api/network/fees/btc/btcFees')(api)
+api = require('./api/network/fees/networkFees')(api)
+api = require('./api/network/supply/vrsc/vrscCoinSupply')(api)
+api = require('./api/network/supply/coinSupply')(api)
 
 
 // dex
