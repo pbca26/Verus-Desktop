@@ -4,7 +4,7 @@ module.exports = (api) => {
   api.native.start_mining = (coin, token, numThreads) => {
     return new Promise((resolve, reject) => {      
       api.native.callDaemon(coin, 'setgenerate', [true, numThreads], token)
-      .then(() => {
+      .then(() => {        
         resolve(true)
       })
       .catch(err => {

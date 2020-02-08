@@ -1,8 +1,8 @@
 // default daemon ports
 
 const assetChainPorts = {
-  komodod: 7771,
-  marketmaker: 7783,
+  KMD: 7771,
+  //marketmaker: 7783,
   OOT: 12467,
   PIZZA: 11608,
   BEER: 8923,
@@ -31,7 +31,6 @@ const assetChainPorts = {
   AXO: 12927,
   ETOMIC: 10271,
   NINJA: 8427,
-  BTCH: 8800,
   BNTN: 14358,
   EQL: 10306,
   PRLPAY: 9679,
@@ -56,6 +55,7 @@ const assetChainPorts = {
   DP: 28388,
   VRSCTEST: 17845,
   VRSC: 27486,
+  ZEC: 11192
 };
 
 module.exports = assetChainPorts;
