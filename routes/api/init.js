@@ -84,9 +84,26 @@ module.exports = (api) => {
         api.log('zcashparams folder already exists', 'init');
       }
 
+      api.compareNSPVCoinsFile();
+
       _foldersInitRan = true;
     }
   }
+
+  api.compareNSPVCoinsFile = () => {
+    const rootLocation = path.join(__dirname, '../../');
+    const nspvCoinsAgamaDirSize = fs.existsSync(`${api.agamaDir}/coins`) && fs.lstatSync(`${api.agamaDir}/coins`);
+    let localNSPVCoinsFile = fs.lstatSync(`${rootLocation}/routes/coins`);
+    
+    if (!nspvCoinsAgamaDirSize ||
+        (nspvCoinsAgamaDirSize && nspvCoinsAgamaDirSize.size !== localNSPVCoinsFile.size)) {
+      api.log('NSPV coins file mismatch, copy over', 'init');
+      localNSPVCoinsFile = fs.readFileSync(`${rootLocation}/routes/coins`, 'utf8');
+      fs.writeFileSync(`${api.agamaDir}/coins`, localNSPVCoinsFile, 'utf8');
+    } else {
+      api.log('NSPV coins file is matching', 'init');
+    }
+  };
 
   return api;
 };
