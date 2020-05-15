@@ -343,7 +343,8 @@ function createAppCloseWindow() {
 
 				// load our index.html (i.e. Agama GUI)
 				api.writeLog('show agama gui');
-				const _assetChainPorts = require('./routes/ports.js');
+        const _assetChainPorts = require('./routes/ports.js');
+        const nspvPorts = require('./routes/api/electrum/nspvPorts');
 
 				staticVar.arch = localVersion[1].indexOf('-spv-only') > -1 ? 'spv-only' : arch();
 				staticVar.appBasicInfo = appBasicInfo;
@@ -353,7 +354,8 @@ function createAppCloseWindow() {
 				staticVar.isWindows = os.platform() === 'win32' ? true : false;
 				staticVar.spvFees = _spvFees;
 				staticVar.electrumServers = api.electrumServersFlag;
-				staticVar.chainParams = chainParams;
+        staticVar.chainParams = chainParams;
+        staticVar.nspvPorts = nspvPorts;
 
 				let _global = {
 					appConfig,
@@ -470,7 +472,8 @@ function createAppCloseWindow() {
 						api.log('Closing Main Window...', 'quit');
 						api.writeLog('exiting app...');
 
-						api.quitKomodod(appConfig.general.native.cliStopTimeout);
+            api.quitKomodod(appConfig.general.native.cliStopTimeout);
+            api.stopNSPVDaemon('all');
 
 						const result = 'Closing daemons: done';
 
