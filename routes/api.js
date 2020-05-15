@@ -58,6 +58,7 @@ const {
 api.electrumServers = electrumServers;
 api.electrumServersFlag = electrumServersFlag;
 api.electrumServersV1_4 = {};
+api.nspvProcesses = {};
 
 api.CONNECTION_ERROR_OR_INCOMPLETE_DATA = 'connection error or incomplete data';
 
@@ -124,7 +125,10 @@ api = require('./api/electrum/utils.js')(api);
 api = require('./api/electrum/remove')(api);
 api = require('./api/electrum/send.js')(api);
 
-//native
+// nspv
+api = require('./api/electrum/nspv.js')(api);
+
+// native
 api = require('./api/native/addrBalance.js')(api);
 api = require('./api/native/coins')(api);
 api = require('./api/native/callDaemon')(api);
