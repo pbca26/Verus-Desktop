@@ -16,17 +16,33 @@ module.exports = (api) => {
   api.electrumGetBlockInfo = (height, network) => {
     return new Promise((resolve, reject) => {
       async function _electrumGetBlockInfo() {
-        const ecl = await api.ecl(network);
+        if (api.electrum.coinData[network.toLowerCase()].nspv) {
+          api.nspvRequest(
+            network.toLowerCase(),
+            'getinfo',
+            [height]
+          )
+          .then((nspvGetinfo) => {
+            if (nspvGetinfo &&
+                nspvGetinfo.header) {
+              resolve(nspvGetinfo.header);
+            } else {
+              resolve();
+            }
+          });
+        } else {
+          const ecl = await api.ecl(network);
 
-        ecl.connect();
-        ecl.blockchainBlockGetHeader(height)
-        .then((json) => {
-          ecl.close();
-          api.log('electrum getblockinfo ==>', 'spv.getblockinfo');
-          api.log(json, 'spv.getblockinfo');
+          ecl.connect();
+          ecl.blockchainBlockGetHeader(height)
+          .then((json) => {
+            ecl.close();
+            api.log('electrum getblockinfo ==>', 'spv.getblockinfo');
+            api.log(json, 'spv.getblockinfo');
 
-          resolve(json);
-        });
+            resolve(json);
+          });
+        }
       }
       _electrumGetBlockInfo();
     });
@@ -44,7 +60,7 @@ module.exports = (api) => {
     });
   });
 
-  api.electrumGetCurrentBlock = (network) => {
+  api.electrumGetCurrentBlock = (network, returnNspvReq) => {
     return new Promise((resolve, reject) => {
       async function _electrumGetCurrentBlock() {
         const ecl = await api.ecl(network);
@@ -68,7 +84,7 @@ module.exports = (api) => {
             resolve(json);
           }
         });
-      };
+      }
       _electrumGetCurrentBlock();
     });
   }
