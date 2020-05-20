@@ -3,17 +3,24 @@ const { checkTimestamp } = require('agama-wallet-lib/src/time');
 const { pubToElectrumScriptHashHex } = require('agama-wallet-lib/src/keys');
 const btcnetworks = require('agama-wallet-lib/src/bitcoinjs-networks');
 const { toSats } = require('agama-wallet-lib/src/utils');
+const kmdCalcInterest = require('agama-wallet-lib/src/komodo-interest');
 const UTXO_1MONTH_THRESHOLD_SECONDS = 2592000;
 
 module.exports = (api) => {
   api.get('/electrum/get_balances', (req, res, next) => {
     if (!req.query.chainTicker) {
-      res.end(JSON.stringify({msg: 'error', result: "No coin passed to electrum get_balances"}));
+      res.end(JSON.stringify({
+        msg: 'error',
+        result: 'No coin passed to electrum get_balances'
+      }));
     }
     const coinLc = req.query.chainTicker.toLowerCase()
 
     if (!api.electrumKeys[coinLc] || !api.electrumKeys[coinLc].pub) {
-      res.end(JSON.stringify({msg: 'error', result: `No address found for ${req.query.chainTicker}`}));
+      res.end(JSON.stringify({
+        msg: 'error',
+        result: `No address found for ${req.query.chainTicker}`
+      }));
     }
     
     api.electrum.get_balances(api.electrumKeys[coinLc].pub, req.query.chainTicker)
@@ -186,7 +193,7 @@ module.exports = (api) => {
                         if (decodedTx &&
                             decodedTx.format &&
                             decodedTx.format.locktime > 0) {
-                          interestTotal += api.kmdCalcInterest(
+                          interestTotal += kmdCalcInterest(
                             decodedTx.format.locktime,
                             _utxoItem.value,
                             _utxoItem.height,
