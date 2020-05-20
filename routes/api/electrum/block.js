@@ -23,6 +23,9 @@ module.exports = (api) => {
             [height]
           )
           .then((nspvGetinfo) => {
+            api.log('nspv getblockinfo ==>', 'nspv.getblockinfo');
+            api.log(nspvGetinfo.header, 'nspv.getblockinfo');
+
             if (nspvGetinfo &&
                 nspvGetinfo.header) {
               resolve(nspvGetinfo.header);
@@ -71,6 +74,9 @@ module.exports = (api) => {
           .then((nspvGetinfo) => {
             if (nspvGetinfo &&
                 nspvGetinfo.height) {
+              api.log('nspv currentblock ==>', 'nspv.currentblock');
+              api.log(nspvGetinfo.height, 'nspv.currentblock');
+
               if (returnNspvReq) {
                 resolve(nspvGetinfo);
               } else {

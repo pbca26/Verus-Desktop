@@ -22,9 +22,13 @@ module.exports = (api) => {
         nspvPorts[coin.toUpperCase()]) {
       api.log(`start ${coin.toUpperCase()} in NSPV at port ${nspvPorts[coin.toUpperCase()]}`, 'spv.coin');
       
-      const nspv = spawn(`${api.komodocliDir}/nspv`, coin.toUpperCase() === 'KMD' ? '' : [coin.toUpperCase()], {
-        cwd: api.agamaDir,
-      }, []);
+      const nspv = spawn(
+        `${api.komodocliDir}/nspv`,
+        coin.toUpperCase() === 'KMD' ? '' : [coin.toUpperCase()],
+        {
+          cwd: api.agamaDir,
+        }, []
+      );
 
       nspv.stdout.on('data', (data) => {
         console.log(`stdout: ${data}`);
@@ -82,13 +86,16 @@ module.exports = (api) => {
     if (enableNspv) api.electrum.coinData[coin].nspv = true;
 
     if (randomServer) {
-      api.log(`random ${coin} electrum server ${randomServer.ip + ':' + randomServer.port}`, 'spv.coin');
+      api.log(`random ${coin} electrum server ${randomServer.ip}:${randomServer.port}`, 'spv.coin');
     } else {
       api.log(`${coin} doesnt have any backup electrum servers`, 'spv.coin');
     }
 
     if (Object.keys(api.electrumKeys).length > 0) {
-      const _keys = api.wifToWif(api.electrumKeys[Object.keys(api.electrumKeys)[0]].priv, coin);
+      const _keys = api.wifToWif(
+        api.electrumKeys[Object.keys(api.electrumKeys)[0]].priv,
+        coin
+      );
 
       api.electrumKeys[coin] = {
         priv: _keys.priv,
@@ -126,7 +133,10 @@ module.exports = (api) => {
 
   api.post('/electrum/coins/activate', (req, res, next) => {
     if (api.checkToken(req.body.token)) {
-      const result = api.addElectrumCoin(req.body.chainTicker, req.body.launchConfig.startupParams && req.body.launchConfig.startupParams.nspv);
+      const result = api.addElectrumCoin(
+        req.body.chainTicker,
+        req.body.launchConfig.startupParams && req.body.launchConfig.startupParams.nspv
+      );
 
       const retObj = {
         msg: 'success',

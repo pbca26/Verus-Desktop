@@ -76,7 +76,8 @@ module.exports = (api) => {
                 if (nspvTxHistory &&
                     nspvTxHistory.result &&
                     nspvTxHistory.result === 'success') {
-                  console.log(nspvTxHistory)
+                  console.log(nspvTxHistory);
+
                   resolve({
                     confirmed: toSats(nspvTxHistory.balance),
                     unconfirmed: 0,
@@ -84,7 +85,7 @@ module.exports = (api) => {
                   console.log({
                     confirmed: toSats(nspvTxHistory.balance),
                     unconfirmed: 0,
-                  })
+                  });
                 } else {
                   resolve('unable to get balance');
                 }
@@ -164,7 +165,7 @@ module.exports = (api) => {
                       api.getTransaction(_utxoItem.tx_hash, network, ecl)
                       .then((_rawtxJSON) => {
                         api.log('electrum gettransaction ==>', 'spv.getbalance');
-                        api.log((index + ' | ' + (_rawtxJSON.length - 1)), 'spv.getbalance');
+                        api.log(`${index} | ${_rawtxJSON.length - 1}`, 'spv.getbalance');
                         api.log(_rawtxJSON, 'spv.getbalance');
 
                         // decode tx
@@ -225,7 +226,7 @@ module.exports = (api) => {
                     confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),
                     unconfirmed: Number((0.00000001 * json.unconfirmed).toFixed(8)),
                     interest: 0,
-                  })
+                  });
                 }
               } else {
                 ecl.close();
@@ -234,7 +235,7 @@ module.exports = (api) => {
                   confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),
                   unconfirmed: Number((0.00000001 * json.unconfirmed).toFixed(8)),
                   interest: 0,
-                })
+                });
               }
             });
           } else {
@@ -250,10 +251,10 @@ module.exports = (api) => {
           }
         } else {
           ecl.close();
-          reject(new Error(api.CONNECTION_ERROR_OR_INCOMPLETE_DATA))
+          reject(new Error(api.CONNECTION_ERROR_OR_INCOMPLETE_DATA));
         }
       })
-      .catch(e => reject(e))
+      .catch(e => reject(e));
     })
   }
 
