@@ -8,8 +8,14 @@ const UTXO_1MONTH_THRESHOLD_SECONDS = 2592000;
 
 module.exports = (api) => {
   api.electrum.listunspent = (ecl, address, network, full, verify) => {
-    const _address = ecl.protocolVersion && ecl.protocolVersion === '1.4' ? pubToElectrumScriptHashHex(address, btcnetworks[network.toLowerCase()] || btcnetworks.kmd) : address;
+    let _address = address;
     let _atLeastOneDecodeTxFailed = false;
+
+    if (api.electrum.coinData[network.toLowerCase()].nspv) {
+      ecl = api.nspvWrapper(network.toLowerCase());
+    } else {
+      _address = ecl.protocolVersion && ecl.protocolVersion === '1.4' ? pubToElectrumScriptHashHex(address, btcnetworks[network.toLowerCase()] || btcnetworks.kmd) : address;
+    }
 
     if (full &&
         !ecl.insight) {
@@ -37,6 +43,7 @@ module.exports = (api) => {
                   ecl.close();
                   resolve('no valid utxo');
                 } else {
+                  // TODO: nspv don't request individual transaction raw hex
                   Promise.all(_utxo.map((_utxoItem, index) => {
                     return new Promise((resolve, reject) => {
                       api.getTransaction(_utxoItem.tx_hash, network, ecl)
@@ -105,35 +112,41 @@ module.exports = (api) => {
                               verified: false,
                             };
 
-                            if (api.electrumCache[network] &&
-                                api.electrumCache[network].verboseTx &&
-                                api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
-                                api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
-                              if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
-                                _resolveObj.dpowSecured = true;
-                              } else {
-                                _resolveObj.dpowSecured = false;
-                              }
-                            }
-
-                            // merkle root verification against another electrum server
-                            if (verify) {
-                              api.verifyMerkleByCoin(
-                                api.findCoinName(network),
-                                _utxoItem.tx_hash,
-                                _utxoItem.height
-                              )
-                              .then((verifyMerkleRes) => {
-                                if (verifyMerkleRes &&
-                                    verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
-                                  verifyMerkleRes = false;
-                                }
-
-                                _resolveObj.verified = verifyMerkleRes;
-                                resolve(_resolveObj);
-                              });
-                            } else {
+                            if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                              _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
+                              _resolveObj.verified = true;
                               resolve(_resolveObj);
+                            } else {
+                              if (api.electrumCache[network] &&
+                                  api.electrumCache[network].verboseTx &&
+                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
+                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
+                                if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
+                                  _resolveObj.dpowSecured = true;
+                                } else {
+                                  _resolveObj.dpowSecured = false;
+                                }
+                              }
+
+                              // merkle root verification against another electrum server
+                              if (verify) {
+                                api.verifyMerkleByCoin(
+                                  api.findCoinName(network),
+                                  _utxoItem.tx_hash,
+                                  _utxoItem.height
+                                )
+                                .then((verifyMerkleRes) => {
+                                  if (verifyMerkleRes &&
+                                      verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
+                                    verifyMerkleRes = false;
+                                  }
+
+                                  _resolveObj.verified = verifyMerkleRes;
+                                  resolve(_resolveObj);
+                                });
+                              } else {
+                                resolve(_resolveObj);
+                              }
                             }
                           } else {
                             let _resolveObj = {
@@ -149,35 +162,41 @@ module.exports = (api) => {
                               verified: false,
                             };
 
-                            if (api.electrumCache[network] &&
-                                api.electrumCache[network].verboseTx &&
-                                api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
-                                api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
-                              if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
-                                _resolveObj.dpowSecured = true;
-                              } else {
-                                _resolveObj.dpowSecured = false;
-                              }
-                            }
-
-                            // merkle root verification against another electrum server
-                            if (verify) {
-                              api.verifyMerkleByCoin(
-                                api.findCoinName(network),
-                                _utxoItem.tx_hash,
-                                _utxoItem.height
-                              )
-                              .then((verifyMerkleRes) => {
-                                if (verifyMerkleRes &&
-                                    verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
-                                  verifyMerkleRes = false;
-                                }
-
-                                _resolveObj.verified = verifyMerkleRes;
-                                resolve(_resolveObj);
-                              });
-                            } else {
+                            if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                              _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
+                              _resolveObj.verified = true;
                               resolve(_resolveObj);
+                            } else {
+                              if (api.electrumCache[network] &&
+                                  api.electrumCache[network].verboseTx &&
+                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
+                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
+                                if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
+                                  _resolveObj.dpowSecured = true;
+                                } else {
+                                  _resolveObj.dpowSecured = false;
+                                }
+                              }
+
+                              // merkle root verification against another electrum server
+                              if (verify) {
+                                api.verifyMerkleByCoin(
+                                  api.findCoinName(network),
+                                  _utxoItem.tx_hash,
+                                  _utxoItem.height
+                                )
+                                .then((verifyMerkleRes) => {
+                                  if (verifyMerkleRes &&
+                                      verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
+                                    verifyMerkleRes = false;
+                                  }
+
+                                  _resolveObj.verified = verifyMerkleRes;
+                                  resolve(_resolveObj);
+                                });
+                              } else {
+                                resolve(_resolveObj);
+                              }
                             }
                           }
                         }
@@ -228,7 +247,7 @@ module.exports = (api) => {
   api.get('/electrum/listunspent', (req, res, next) => {
     async function _getListunspent() {
       const network = req.query.network || api.validateChainTicker(req.query.coin);
-      const ecl = await api.ecl(network);
+      const ecl = api.electrum.coinData[network.toLowerCase()].nspv ? {} : await api.ecl(network);
 
       if (req.query.full &&
           req.query.full === 'true') {
@@ -252,7 +271,7 @@ module.exports = (api) => {
       } else {
         api.electrum.listunspent(ecl, req.query.address, network)
         .then((listunspent) => {
-          ecl.close();
+          if (!api.electrum.coinData[network.toLowerCase()].nspv) ecl.close();
           api.log('electrum listunspent ==>', 'spv.listunspent');
 
           const retObj = {
