@@ -590,6 +590,11 @@ module.exports = (api) => {
                 nspvBroadcast.result &&
                 nspvBroadcast.result === 'success' &&
                 nspvBroadcast.expected === nspvBroadcast.broadcast) {
+              api.updatePendingTxCache(chainTicker, nspvBroadcast.broadcast, {
+                pub: api.electrumKeys[chainTicker.toLowerCase()].pub,
+                rawtx: preflightRes.rawTx
+              });
+
               return nspvBroadcast.broadcast;
             } else {
               return { message: 'unable to broadcast a tx' };
