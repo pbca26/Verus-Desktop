@@ -24,7 +24,7 @@ module.exports = (api) => {
       
       const nspv = spawn(
         `${api.komodocliDir}/nspv`,
-        coin.toUpperCase() === 'KMD' ? '' : [coin.toUpperCase()],
+        coin.toUpperCase() === 'KMD' ? [] : [coin.toUpperCase()],
         {
           cwd: api.agamaDir,
         }, []
