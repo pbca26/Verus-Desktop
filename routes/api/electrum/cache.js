@@ -34,7 +34,11 @@ module.exports = (api) => {
       }
 
       if (!api.electrumCache.pendingTx[network][txid]) {
-        api.electrumCache.pendingTx[network][txid] = {
+        api.electrumCache.pendingTx[network][txid] = api.electrum.coinData[network.toLowerCase()].nspv ? {
+          pub: options.pub,
+          rawtx: options.rawtx,
+          value: options.value || null, // nspv pending tx workaround
+        } : {
           pub: options.pub,
           rawtx: options.rawtx,
         };
@@ -58,7 +62,11 @@ module.exports = (api) => {
       
       for (let key in _txs) {
         if (_txs[key].pub === pub) {
-          _items.push({
+          _items.push(api.electrum.coinData[network.toLowerCase()].nspv ? {
+            txid: key,
+            rawtx: api.electrumCache.pendingTx[network][key].rawtx,
+            value: api.electrumCache.pendingTx[network][key].value, // nspv pending tx workaround
+          } : {
             txid: key,
             rawtx: api.electrumCache.pendingTx[network][key].rawtx,
           });
