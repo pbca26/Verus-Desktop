@@ -592,7 +592,8 @@ module.exports = (api) => {
                 nspvBroadcast.expected === nspvBroadcast.broadcast) {
               api.updatePendingTxCache(chainTicker, nspvBroadcast.broadcast, {
                 pub: api.electrumKeys[chainTicker.toLowerCase()].pub,
-                rawtx: preflightRes.rawTx
+                rawtx: preflightRes.rawTx,
+                value: amount,
               });
 
               return nspvBroadcast.broadcast;
