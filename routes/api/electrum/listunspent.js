@@ -28,8 +28,13 @@ module.exports = (api) => {
             let formattedUtxoList = [];
             let _utxo = [];
 
-            api.electrumGetCurrentBlock(network)
+            api.electrumGetCurrentBlock(network, api.electrum.coinData[network.toLowerCase()].nspv)
             .then((currentHeight) => {
+              if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                nspvGetinfo = JSON.parse(JSON.stringify(currentHeight));
+                currentHeight = nspvGetinfo.height;
+              }
+                
               if (currentHeight &&
                   Number(currentHeight) > 0) {
                 // filter out unconfirmed utxos
@@ -112,7 +117,7 @@ module.exports = (api) => {
                               verified: false,
                             };
 
-                            if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                            if (api.electrum.coinData[network.toLowerCase()].nspv) {                              
                               _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
                               _resolveObj.verified = true;
                               resolve(_resolveObj);
