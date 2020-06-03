@@ -41,6 +41,8 @@ module.exports = (api) => {
                 for (let i = 0; i < _utxoJSON.length; i++) {
                   if (Number(currentHeight) - Number(_utxoJSON[i].height) !== 0) {
                     _utxo.push(_utxoJSON[i]);
+                    console.log('utxo '+ i);
+                    console.log(_utxoJSON[i]);
                   }
                 }
 
@@ -117,8 +119,8 @@ module.exports = (api) => {
                               verified: false,
                             };
 
-                            if (api.electrum.coinData[network.toLowerCase()].nspv) {                              
-                              _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
+                            if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                              _resolveObj.dpowSecured = nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
                               _resolveObj.verified = true;
                               resolve(_resolveObj);
                             } else {
@@ -168,7 +170,7 @@ module.exports = (api) => {
                             };
 
                             if (api.electrum.coinData[network.toLowerCase()].nspv) {
-                              _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
+                              _resolveObj.dpowSecured = nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
                               _resolveObj.verified = true;
                               resolve(_resolveObj);
                             } else {
