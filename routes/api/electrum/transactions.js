@@ -40,7 +40,7 @@ module.exports = (api) => {
 
         if (!api.electrumKeys[coinLc] || !api.electrumKeys[coinLc].pub) reject(new Error(`No address found for ${config.coin}`))
 
-        const address = api.electrumKeys[coinLc].pub
+        const address = api.electrumKeys[coinLc].pub;
         let walletId = address;
         
         let ecl = {};
@@ -93,7 +93,7 @@ module.exports = (api) => {
               .then((json) => {
                 if (json &&
                     json.length) {
-                  const _pendingTxs = api.findPendingTxByAddress(network, address);
+                  const _pendingTxs = api.findPendingTxByAddress(network.toUpperCase(), address);
                   let _rawtx = [];
                   let _flatTxHistory = [];
                   let _flatTxHistoryFull = {};
@@ -134,7 +134,11 @@ module.exports = (api) => {
                       } else {
                         api.log(`push ${_pendingTxs[i].txid} from pending txs in cache to transactions history`, 'spv.transactions.pending.cache');
                         
-                        json.unshift({
+                        json.unshift(api.electrum.coinData[network.toLowerCase()].nspv ? {
+                          height: 'pending',
+                          tx_hash: _pendingTxs[i].txid,
+                          value: _pendingTxs[i].value,
+                        } : {
                           height: 'pending',
                           tx_hash: _pendingTxs[i].txid,
                         });
@@ -155,16 +159,18 @@ module.exports = (api) => {
                     .then((blockInfo) => {
                       if (blockInfo &&
                           blockInfo.timestamp) {
+                        if (transaction.height === 'pending') transaction.height = currentHeight;
+                        
                         if (api.electrum.coinData[network.toLowerCase()].nspv) {
                           _rawtx.push({
                             type: Number(transaction.value) > 0 ? 'received' : 'sent',
                             amount: Number(transaction.value),
                             address,
-                            timestamp: blockInfo.timestamp,
-                            blocktime: blockInfo.timestamp,
-                            timereceived: blockInfo.timestamp,
+                            timestamp: transaction.height === 'pending' ? Date.now() : blockInfo.timestamp,
+                            blocktime: transaction.height === 'pending' ? Date.now() : blockInfo.timestamp,
+                            timereceived: transaction.height === 'pending' ? Date.now() : blockInfo.timestamp,
                             txid: transaction.tx_hash || 'unknown',
-                            confirmations: transaction.height && Number(currentHeight) - Number(transaction.height) || 'unknown',
+                            confirmations: transaction.height ? (Number(currentHeight) - Number(transaction.height)) < 0 ? 0 : Number(currentHeight) - Number(transaction.height) : 'unknown',
                             height: transaction.height,
                             dpowSecured: nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(transaction.height) ? true : false,
                           });
