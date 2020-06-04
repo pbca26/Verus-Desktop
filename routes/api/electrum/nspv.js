@@ -29,7 +29,8 @@ module.exports = (api) => {
         api.log(body, 'spv.nspv.req');
         // TODO: proper error handling in ecl calls
         try {
-          resolve(JSON.parse(body));
+          if (JSON) resolve(JSON.parse(body));
+          else resolve('error');
         } catch (e) {
           console.log(e);
           resolve('json parse error');
@@ -136,7 +137,13 @@ module.exports = (api) => {
                 nspvListunspent.result &&
                 nspvListunspent.result === 'success') {
               for (let i = 0; i < nspvListunspent.utxos.length; i++) {
-                nspvUtxos.push({
+                nspvUtxos.push(network.toLowerCase() === 'kmd' ? {
+                  tx_hash: nspvListunspent.utxos[i].txid,
+                  height: nspvListunspent.utxos[i].height,
+                  value: toSats(nspvListunspent.utxos[i].value),
+                  rewards: toSats(nspvListunspent.utxos[i].rewards),
+                  tx_pos: nspvListunspent.utxos[i].vout,
+                } : {
                   tx_hash: nspvListunspent.utxos[i].txid,
                   height: nspvListunspent.utxos[i].height,
                   value: toSats(nspvListunspent.utxos[i].value),
