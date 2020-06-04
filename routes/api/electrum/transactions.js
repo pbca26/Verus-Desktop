@@ -526,10 +526,15 @@ module.exports = (api) => {
   };
 
   api.get('/electrum/gettransaction', (req, res, next) => {
-    // TODO: nspv support
     async function _getTransaction() {
       const network = req.query.network || api.validateChainTicker(req.query.coin);
-      const ecl = await api.ecl(network);
+      let ecl;
+
+      if (api.electrum.coinData[network.toLowerCase()].nspv) {
+        ecl = api.nspvWrapper(network.toLowerCase());
+      } else {
+        ecl = await api.ecl(network);
+      }
 
       api.log('electrum gettransaction =>', 'spv.gettransaction');
 

@@ -158,6 +158,28 @@ module.exports = (api) => {
           });
         });
       },
+      blockchainTransactionGet: (__txid, returnValue) => {
+        return new Promise((resolve, reject) => {
+          api.nspvRequest(
+            network.toLowerCase(),
+            'gettransaction',
+            [__txid],
+          )
+          .then((nspvGetTx) => {
+            if (returnValue) {
+              resolve(nspvGetTx);
+            } else {
+              if (nspvGetTx &&
+                  nspvGetTx.hasOwnProperty('hex')) {
+                resolve(nspvGetTx.hex);
+              } else {
+                api.log(`nspv unable to get raw input tx ${__txid}`, 'spv.cache');
+                resolve('unable to get raw transaction');
+              }
+            }
+          });
+        });
+      },
     };
   };
 
