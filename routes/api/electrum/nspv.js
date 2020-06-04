@@ -180,6 +180,30 @@ module.exports = (api) => {
           });
         });
       },
+      blockchainTransactionBroadcast: (__rawtx, returnValue) => {
+        return new Promise((resolve, reject) => {
+          api.nspvRequest(
+            network.toLowerCase(),
+            'broadcast',
+            [__rawtx],
+          )
+          .then((nspvBroadcast) => {
+            if (returnValue) {
+              resolve(nspvBroadcast);
+            } else {
+              if (nspvBroadcast &&
+                  nspvBroadcast.result &&
+                  nspvBroadcast.result === 'success' &&
+                  nspvBroadcast.expected === nspvBroadcast.broadcast) {
+                resolve(nspvBroadcast.broadcast);
+              } else {
+                api.log(`nspv unable to push transaction ${__rawtx}`, 'spv.cache');
+                resolve('unable to push raw transaction');
+              }
+            }
+          });
+        });
+      },
     };
   };
 
