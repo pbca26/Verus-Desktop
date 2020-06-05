@@ -4,6 +4,12 @@ getProtocolVersion = (_ecl) => {
   return new Promise((resolve, reject) => {
     _ecl.serverVersion('VerusDesktop')
     .then((serverData) => {
+      if (serverData &&
+          JSON.stringify(serverData).indexOf('server.version already sent') > -1) {
+        console.log('server version already sent');
+        resolve('sent');
+      }
+
       let serverVersion = 0;
 
       if (serverData &&
