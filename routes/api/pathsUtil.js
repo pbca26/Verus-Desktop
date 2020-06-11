@@ -116,7 +116,7 @@ const setCoinDir = (api, coin, dirNames) => {
       api[dirName] = `${process.env.HOME}/Library/Application Support/${darwin}`
       return api;
     case 'linux':
-      api[dirName] = `${process.env.HOME}/.${linux}`
+      api[dirName] = `${process.env.HOME}/${linux}`
       return api;
     case 'win32':
       api[dirName] = `${process.env.APPDATA}/${win32}`,

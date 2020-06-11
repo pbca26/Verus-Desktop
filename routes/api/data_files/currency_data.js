@@ -20,8 +20,8 @@ module.exports = (api) => {
   api.saveCurrencyWhitelist = (whitelist) =>
     api.saveJsonFile(whitelist, CURRENCY_WHITELIST, WHITELIST_DESC);
 
-  api.get('/load_currency_blacklist', (req, res, next) => {
-    api.native.loadCurrencyBlacklist()
+  api.get('/load_currency_blacklist', async (req, res, next) => {
+    api.loadCurrencyBlacklist()
     .then((blacklist) => {
       const retObj = {
         msg: 'success',
@@ -41,7 +41,7 @@ module.exports = (api) => {
   });
 
   api.get('/load_currency_whitelist', (req, res, next) => {
-    api.native.loadCurrencyWhitelist()
+    api.loadCurrencyWhitelist()
     .then((whitelist) => {
       const retObj = {
         msg: 'success',
@@ -60,14 +60,14 @@ module.exports = (api) => {
     })
   });
 
-  api.get('/save_currency_blacklist', (req, res, next) => {
+  api.post('/save_currency_blacklist', async (req, res, next) => {
     const { token, blacklist } = req.body
    
     if (api.checkToken(token)) {
       try {
         const retObj = {
           msg: 'success',
-          result: api.saveCurrencyBlacklist(blacklist),
+          result: await api.saveCurrencyBlacklist(blacklist),
         };
 
         res.end(JSON.stringify(retObj));
@@ -89,14 +89,14 @@ module.exports = (api) => {
     }
   });
 
-  api.get('/save_currency_whitelist', (req, res, next) => {
+  api.post('/save_currency_whitelist', async (req, res, next) => {
     const { token, whitelist } = req.body
    
     if (api.checkToken(token)) {
       try {
         const retObj = {
           msg: 'success',
-          result: api.saveCurrencyWhitelist(whitelist),
+          result: await api.saveCurrencyWhitelist(whitelist),
         };
 
         res.end(JSON.stringify(retObj));

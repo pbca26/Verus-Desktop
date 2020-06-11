@@ -1,5 +1,3 @@
-const request = require('request');
-
 module.exports = (api) => {
   api.native.activateNativeCoin = (
     coin,
@@ -7,10 +5,12 @@ module.exports = (api) => {
     daemon,
     fallbackPort,
     dirNames,
-    confName
+    confName,
+    tags = []
   ) => {
     let acOptions = []
     const chainParams = api.chainParams[coin];
+    if (tags.includes('is_komodo')) api.customKomodoNetworks[coin.toLowerCase()] = true
 
     for (let key in chainParams) {
       if (typeof chainParams[key] === "object") {
@@ -61,7 +61,14 @@ module.exports = (api) => {
   api.post('/native/coins/activate', (req, res) => {
     if (api.checkToken(req.body.token)) {
       const { chainTicker, launchConfig } = req.body
-      let { startupParams, daemon, fallbackPort, dirNames, confName } = launchConfig
+      let {
+        startupParams,
+        daemon,
+        fallbackPort,
+        dirNames,
+        confName,
+        tags,
+      } = launchConfig;
 
       // Push in startupOptions according to config file
       if (
@@ -85,7 +92,8 @@ module.exports = (api) => {
           daemon,
           fallbackPort,
           dirNames,
-          confName
+          confName,
+          tags
         )
         .then(result => {
           const retObj = {
@@ -100,6 +108,7 @@ module.exports = (api) => {
             msg: "error",
             result: e.message
           };
+          
           res.end(JSON.stringify(retObj));
         });
     } else {

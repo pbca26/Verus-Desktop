@@ -1,5 +1,4 @@
 const coinDataTranslated = require('./coinDataTranslated')
-const fiatList = require('./fiatList');
 const zcashParamsSources = require('./zcashParamsSources')
 
 let zCoins = {}
