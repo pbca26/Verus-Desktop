@@ -99,11 +99,7 @@ module.exports = (api) => {
       }
      
       fs.writeFileSync(configFileName,
-                  JSON.stringify(appSettings)
-                  .replace(/,/g, ',\n') // format json in human readable form
-                  .replace(/":/g, '": ')
-                  .replace(/{/g, '{\n')
-                  .replace(/}/g, '\n}'), 'utf8');
+                  JSON.stringify(appSettings), 'utf8');
 
       
       api.log('config.json write file is done', 'settings');

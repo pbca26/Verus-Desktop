@@ -110,12 +110,7 @@ module.exports = (api) => {
           return new Promise((resolve, reject) => {
             const result = 'electrumServers.json write file is done';
 
-            fs.writeFile(electrumServersListFileName,
-                        JSON.stringify(list)
-                        .replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}'), 'utf8', (err) => {
+            fs.writeFile(electrumServersListFileName, JSON.stringify(list), 'utf8', (err) => {
               if (err)
                 return api.log(err, 'spv.serverList');
             });
@@ -159,12 +154,7 @@ module.exports = (api) => {
           return new Promise((resolve, reject) => {
             const result = 'kvElectrumServersCache.json write file is done';
 
-            fs.writeFile(kvElectrumServersListFileName,
-                        JSON.stringify(list)
-                        .replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}'), 'utf8', (err) => {
+            fs.writeFile(kvElectrumServersListFileName, JSON.stringify(list), 'utf8', (err) => {
               if (err)
                 return api.log(err, 'spv.serverList');
             });

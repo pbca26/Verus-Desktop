@@ -44,11 +44,7 @@ module.exports = (api) => {
       }
      
       fs.writeFileSync(usersFileName,
-                  JSON.stringify(users)
-                  .replace(/,/g, ',\n') // format json in human readable form
-                  .replace(/":/g, '": ')
-                  .replace(/{/g, '{\n')
-                  .replace(/}/g, '\n}'), 'utf8');
+                  JSON.stringify(users), 'utf8');
 
       
       api.log('users.json write file is done', 'users');

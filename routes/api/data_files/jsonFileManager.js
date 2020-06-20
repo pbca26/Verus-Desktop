@@ -36,6 +36,8 @@ module.exports = (api) => {
             localJson = localJson.data
           }
         } catch (e) {
+          console.log(e)
+
           api.handleFileProblem(`unable to parse local ${path}`, !handleMissing)
           localJson = {};
         }
@@ -84,11 +86,7 @@ module.exports = (api) => {
 
         await fs.writeFile(
           path,
-          JSON.stringify({ description, data: json })
-            .replace(/,/g, ",\n") // format json in human readable form
-            .replace(/":/g, '": ')
-            .replace(/{/g, "{\n")
-            .replace(/}/g, "\n}"),
+          JSON.stringify({ description, data: json }),
           "utf8"
         );
 

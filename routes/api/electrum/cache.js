@@ -117,11 +117,7 @@ module.exports = (api) => {
             const result = 'spv-cache.json write file is done';
 
             const err = fs.writeFileSync(spvCacheFileName,
-                        JSON.stringify(api.electrumCache)
-                        /*.replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}')*/, 'utf8');
+                        JSON.stringify(api.electrumCache), 'utf8');
 
             if (err)
               return api.log(err, 'spv.cache');
