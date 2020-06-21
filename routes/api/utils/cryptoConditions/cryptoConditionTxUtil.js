@@ -1,3 +1,5 @@
+// TODO: Fix and move to cryptoConditions native file
+
 const extractReserveTransfers = (txJson) => {
   let transfers = []
 

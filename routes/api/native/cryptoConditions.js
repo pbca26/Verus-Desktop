@@ -2,6 +2,7 @@
 const Promise = require('bluebird');
 
 module.exports = (api) => {    
+  //TODO: Finish when API call for estimatefee is completed
   api.native.parse_reserve_transfer = async (chainTicker, rawTx) => {
     let totalIn, totalOut, totalTransferFees, totalNetworkFees, conversionFee = 0
     let isConversion, currencyNotChainticker = false

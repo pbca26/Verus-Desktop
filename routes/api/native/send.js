@@ -68,18 +68,29 @@ module.exports = (api) => {
       currencyParams.currency !== null &&
       (currencyParams.currency !== chainTicker ||
         (currencyParams.currency === chainTicker &&
+          currencyParams.convertto != null &&
           currencyParams.convertto !== currencyParams.currency));
 
     //TODO: Change for sendcurrency to account for 0.25% fee
-    let fee = isSendCurrency ? 0.0002 : 0.0001
-    let spendAmount
+    let fee = isSendCurrency ? 0.0003 : 0.0001
+    let spendAmount = amount
     let deductedAmount
 
-    if (isSendCurrency && currencyParams.mintnew) {
-      spendAmount = 0
-    } else {
-      spendAmount = amount
-    }
+    // Pre-processing for fee purposes
+    if (isSendCurrency) {
+      if (currencyParams.mintnew) {
+        spendAmount = 0
+      }
+      
+      if (
+        currencyParams.currency != null &&
+        currencyParams.convertto != null &&
+        currencyParams.currency !== currencyParams.convertto && 
+        !currencyParams.preconvert
+      ) {
+        fee += (spendAmount * 0.00025);
+      }
+    } 
 
     deductedAmount = Number((spendAmount + fee).toFixed(8))
 
@@ -103,32 +114,34 @@ module.exports = (api) => {
         const { currency, convertto, refundto, preconvert, subtractfee, mintnew } = currencyParams
         cliCmd = "sendcurrency";
         
-        if (currencyParams.currency !== chainTicker) {
-          try {
-            fromCurrency = await api.native.get_currency(chainTicker, api.appSessionHash, currency)
-            
-            if (convertto != null && convertto !== currency) {
-              toCurrency = await api.native.get_currency(chainTicker, api.appSessionHash, convertto)
-              let fromCurrencyIndex = toCurrency.currencies.findIndex((value) => value === fromCurrency.currencyid)
+        try {
+          fromCurrency = await api.native.get_currency(
+            chainTicker,
+            api.appSessionHash,
+            currency == null ? chainTicker : currency
+          );
+          
+          if (convertto != null && convertto !== currency) {
+            toCurrency = await api.native.get_currency(chainTicker, api.appSessionHash, convertto)
+            let fromCurrencyIndex = toCurrency.currencies.findIndex((value) => value === fromCurrency.currencyid)
 
-              if (fromCurrencyIndex === -1) {
-                throw new Error('"' + fromCurrency.name + '" currency is not a valid conversion for currency ""' + toCurrency.name + '"')
-              }
-              
-              currentHeight = await api.native.get_info(chainTicker, api.appSessionHash).longestchain
-
-              if (currentHeight < toCurrency.startblock && !preconvert) {
-                throw new Error("Preconvert expired! You can no longer preconvert this currency.")
-              }
-
-              price = toCurrency.conversions[fromCurrencyIndex]
+            if (fromCurrencyIndex === -1) {
+              throw new Error('"' + fromCurrency.name + '" currency is not a valid conversion for currency ""' + toCurrency.name + '"')
             }
-          } catch (e) {
-            api.log("Error while trying to fetch currencies for sendcurrency!", "send")
-            api.log(e, "send")
-  
-            throw e
+            
+            currentHeight = await api.native.get_info(chainTicker, api.appSessionHash).longestchain
+
+            if (currentHeight < toCurrency.startblock && !preconvert) {
+              throw new Error("Preconvert expired! You can no longer preconvert this currency.")
+            }
+
+            price = toCurrency.conversions[fromCurrencyIndex]
           }
+        } catch (e) {
+          api.log("Error while trying to fetch currencies for sendcurrency!", "send")
+          api.log(e, "send")
+
+          throw e
         }
         
         mint = mintnew
@@ -140,7 +153,7 @@ module.exports = (api) => {
             refundto,
             preconvert,
             subtractfee,
-            amount,
+            amount: spendAmount,
             address: toAddress,
             memo,
             mintnew
@@ -148,7 +161,7 @@ module.exports = (api) => {
         ];
 
         let sendCurrencyTest
-        
+
         // Extract reserve transfer outputs
         try {
           sendCurrencyTest = await api.native.testSendCurrency(chainTicker, txParams)
@@ -159,10 +172,14 @@ module.exports = (api) => {
             throw e
           }
         }
-
-        let reserveTransfer = extractReserveTransfers(sendCurrencyTest)[0]
-
         // Ensure values from decoded tx match input values
+
+        // TODO: Fix once extractReserveTransfers is moved to 
+        // cryptoConditions.js
+        
+        /*
+        let reserveTransfer = extractReserveTransfers(sendCurrencyTest)[0]
+        
         if (reserveTransfer == null)
           throw new Error(
             "Failed to create and verify reserve transfer transaction."
@@ -176,9 +193,7 @@ module.exports = (api) => {
           throw new Error(
             "Failed to verify that sendcurrency input data matches what is going to be sent."
           );
-        }
-
-        fee = reserveTransfer.fees
+        }*/
       } else if (fromAddress || toAddress[0] === "z" || customFee != null) {
         cliCmd = "z_sendmany";
         if (customFee) fee = customFee;
@@ -222,7 +237,7 @@ module.exports = (api) => {
           deductedAmount -= interest
         }
       } 
-      
+
       return {
         cliCmd,
         txParams,
