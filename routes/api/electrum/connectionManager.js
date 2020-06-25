@@ -1,3 +1,17 @@
+const { checkTimestamp } = require('agama-wallet-lib/src/time');
+const { getRandomIntInclusive } = require('agama-wallet-lib/src/utils');
+//const electrumJSCore = require('../electrumjs/electrumjs.core.js');
+
+const CHECK_INTERVAL = 1000;
+const MAX_TIME = 30; // s
+const MAX_IDLE_TIME = 5 * 60;
+const PING_TIME = 60;
+
+// TODO: reconnect/cycle if electrum server is not responding
+
+let electrumServers = {};
+let lock = {};
+
 getProtocolVersion = (_ecl) => {
   let protocolVersion;
   
@@ -35,4 +49,55 @@ getProtocolVersion = (_ecl) => {
       resolve(protocolVersion);
     });
   });
+};
+
+module.exports = (api) => {
+  api.eclStack = [];
+
+  api.eclManager = {
+    getServer: async(coin, customServer) => {
+      if (customServer) console.log(`custom server ${customServer.ip}:${customServer.port}:${customServer.proto}`);
+      if ((customServer && !electrumServers[coin][`${customServer.ip}:${customServer.port}:${customServer.proto}`]) ||
+          !electrumServers[coin] ||
+          (electrumServers[coin] && !Object.keys(electrumServers[coin]).length)) {
+        let serverStr = '';
+
+        if (!customServer) {
+          serverStr = [
+            api.electrum.coinData[coin].server.ip,
+            api.electrum.coinData[coin].server.port,
+            api.electrum.coinData[coin].server.proto
+          ];
+        } else {
+          serverStr = [
+            customServer.ip,
+            customServer.port,
+            customServer.proto
+          ];
+        }
+
+        console.log('ecl server doesnt exist yet, lets add')
+
+        const ecl = new api.electrumJSCore(serverStr[1], serverStr[0], serverStr[2]);
+        console.log(`ecl conn ${serverStr}`);
+        ecl.connect();
+        console.log(`ecl req protocol ${serverStr}`);
+        const eclProtocolVersion = await getProtocolVersion(ecl);
+        
+        if (!electrumServers[coin]) {
+          electrumServers[coin] = {};
+        }
+
+        electrumServers[coin][serverStr.join(':')] = {
+          server: ecl,
+          lastReq: Date.now(),
+          lastPing: Date.now(),
+        };
+
+        return electrumServers[coin][serverStr.join(':')].server;
+      }
+    }
+  };
+
+  return api;
 };
