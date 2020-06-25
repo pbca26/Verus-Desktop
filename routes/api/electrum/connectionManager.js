@@ -95,6 +95,18 @@ module.exports = (api) => {
         };
 
         return electrumServers[coin][serverStr.join(':')].server;
+      } else {
+        if (customServer) {
+          console.log(`ecl ${coin} server exists, custom server param provided`);
+          let ecl = electrumServers[coin][`${customServer.ip}:${customServer.port}:${customServer.proto}`];
+          ecl.lastReq = Date.now();
+          return ecl.server;
+        } else {
+          console.log(`ecl ${coin} server exists`);
+          let ecl = Object.keys(electrumServers[coin]) > 1 ? electrumServers[coin][Object.keys(electrumServers[coin])[getRandomIntInclusive(0, Object.keys(electrumServers[coin]).length)]] : electrumServers[coin][Object.keys(electrumServers[coin])[0]];
+          ecl.lastReq = Date.now();
+          return ecl.server;
+        }
       }
     }
   };
