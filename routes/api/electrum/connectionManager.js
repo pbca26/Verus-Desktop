@@ -1,6 +1,5 @@
 const { checkTimestamp } = require('agama-wallet-lib/src/time');
 const { getRandomIntInclusive } = require('agama-wallet-lib/src/utils');
-//const electrumJSCore = require('../electrumjs/electrumjs.core.js');
 
 const CHECK_INTERVAL = 1000;
 const MAX_TIME = 30; // s
@@ -109,6 +108,45 @@ module.exports = (api) => {
         }
       }
     }
+  };
+
+  api.initElectrumManager = () => {
+    setInterval(() => {
+      for (let coin in electrumServers) {
+        console.log(`ecl check coin ${coin}`);
+
+        for (let serverStr in electrumServers[coin]) {
+          const pingSecPassed = checkTimestamp(electrumServers[coin][serverStr].lastPing);
+          console.log(`ping sec passed ${pingSecPassed}`);
+          
+          if (pingSecPassed > PING_TIME) {
+            console.log(`ecl ${coin} ${serverStr} ping limit passed, send ping`);
+
+            getProtocolVersion(electrumServers[coin][serverStr].server)
+            .then((eclProtocolVersion) => {
+              if (eclProtocolVersion === 'sent') {
+                console.log(`ecl ${coin} ${serverStr} ping success`);
+                electrumServers[coin][serverStr].lastPing = Date.now();
+              } else {
+                console.log(`ecl ${coin} ${serverStr} ping fail, remove server`);
+                delete electrumServers[coin][serverStr];
+              }
+            });
+          }
+
+          const reqSecPassed = checkTimestamp(electrumServers[coin][serverStr].lastReq);
+          console.log(`req sec passed ${reqSecPassed}`);
+          
+          if (reqSecPassed > MAX_IDLE_TIME) {
+            console.log(`ecl ${coin} ${serverStr} req limit passed, disconnect server`);
+            electrumServers[coin][serverStr].server.close();
+            delete electrumServers[coin][serverStr];
+          }
+        }
+      }
+
+      //api.checkOpenElectrumConnections();
+    }, CHECK_INTERVAL);
   };
 
   return api;
