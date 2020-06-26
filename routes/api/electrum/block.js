@@ -36,10 +36,8 @@ module.exports = (api) => {
         } else {
           const ecl = await api.ecl(network);
 
-          ecl.connect();
           ecl.blockchainBlockGetHeader(height)
           .then((json) => {
-            ecl.close();
             api.log('electrum getblockinfo ==>', 'spv.getblockinfo');
             api.log(json, 'spv.getblockinfo');
 
@@ -89,11 +87,8 @@ module.exports = (api) => {
         } else {
           const ecl = await api.ecl(network);
 
-          ecl.connect();
           ecl.blockchainHeadersSubscribe()
           .then((json) => {
-            ecl.close();
-
             api.log('electrum currentblock (electrum >= v1.1) ==>', 'spv.currentblock');
             api.log(json, 'spv.currentblock');
 

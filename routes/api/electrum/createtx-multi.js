@@ -38,7 +38,6 @@ module.exports = (api) => {
 
         api.log('electrum createrawtx =>', 'spv.createrawtx');
 
-        ecl.connect();
         api.electrum.listunspent(
           ecl,
           changeAddress,
@@ -47,8 +46,6 @@ module.exports = (api) => {
           req.body.verify === 'true' ? true : null
         )
         .then((utxoList) => {
-          ecl.close();
-
           if (utxoList &&
               utxoList.length &&
               utxoList[0] &&
@@ -350,10 +347,8 @@ module.exports = (api) => {
                   async function _pushtx() {
                     const ecl = await api.ecl(network);
 
-                    ecl.connect();
                     ecl.blockchainTransactionBroadcast(_rawtx)
                     .then((txid) => {
-                      ecl.close();
 
                       const _rawObj = {
                         utxoSet: inputs,
