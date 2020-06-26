@@ -601,9 +601,7 @@ module.exports = (api) => {
               return { message: 'unable to broadcast a tx' };
             }
           } else {          
-            const ecl = await api.ecl(chainTickerUc);
-            ecl.connect();
-            
+            const ecl = await api.ecl(chainTickerUc);            
             let resObj = ecl.blockchainTransactionBroadcast(preflightRes.rawTx);
 
             return resObj;
