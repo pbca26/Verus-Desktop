@@ -19,6 +19,14 @@ const coinObjArray = coinDataTranslated.getSimpleCoinArray().map(simpleCoinObj =
 
 const appConfig = {
   config: {
+    display: {
+      mining: {
+        wallet: {
+          openMiningBooklets: [{}],
+          openStakingBooklets: [{}],
+        }
+      }
+    },
     general: {
       main: {
         host: "127.0.0.1",

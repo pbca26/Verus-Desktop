@@ -108,6 +108,7 @@ module.exports = (api) => {
     } catch (e) {
       api.log('error writing config', 'settings');
       api.log(e, 'settings');
+      throw e;
     }
   }
 
@@ -125,14 +126,20 @@ module.exports = (api) => {
 
         res.end(JSON.stringify(retObj));
       } else {
-        api.saveLocalAppConf(req.body.configObj);
+        try {
+          api.saveLocalAppConf(req.body.configObj);
+        } catch(e) {
+          res.end(JSON.stringify({
+            msg: 'error',
+            result: e.message,
+          }));
+          return
+        }
 
-        const retObj = {
+        res.end(JSON.stringify({
           msg: 'success',
           result: 'config saved',
-        };
-
-        res.end(JSON.stringify(retObj));
+        }));
       }
     } else {
       const retObj = {

@@ -31,7 +31,7 @@ module.exports = (api) => {
           api.native.get_currency(chain, api_token, currency)
           .then(res => _resolve(res))
           .catch(err => {
-            api.log(`Error fetching currency: ${currency}!`, "getCurrencies")
+            api.log(`Error fetching currency: "${currency}"!`, "getCurrencies")
             api.log(err, "getCurrencies")
 
             _resolve(null)

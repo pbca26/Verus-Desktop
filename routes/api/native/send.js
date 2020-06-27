@@ -85,8 +85,7 @@ module.exports = (api) => {
       if (
         currencyParams.currency != null &&
         currencyParams.convertto != null &&
-        currencyParams.currency !== currencyParams.convertto && 
-        !currencyParams.preconvert
+        currencyParams.currency !== currencyParams.convertto
       ) {
         fee += (spendAmount * 0.00025);
       }
