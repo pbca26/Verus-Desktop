@@ -47,11 +47,16 @@ module.exports = (api) => {
         }
 
         currencyArray.forEach((value, index) => {
-          res.currencyData[currencies[index]] = value
-          res.currencyNames[value.currencyid] = value.name
+          if (value != null && value.currencyid != null && value.name != null) {
+            res.currencyData[currencies[index]] = value
+            res.currencyNames[value.currencyid] = value.name
+          }
         })
-
+        
         resolve(res)
+      })
+      .catch(e => {
+        throw (e)
       })
     });
   };

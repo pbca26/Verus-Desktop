@@ -64,9 +64,9 @@ module.exports = (api) => {
     let mint = false
 
     let isSendCurrency =
-      currencyParams !== null &&
-      currencyParams.currency !== null &&
-      (currencyParams.currency !== chainTicker ||
+      currencyParams != null &&
+      currencyParams.currency != null &&
+      (currencyParams.currency != chainTicker ||
         (currencyParams.currency === chainTicker &&
           currencyParams.convertto != null &&
           currencyParams.convertto !== currencyParams.currency));
