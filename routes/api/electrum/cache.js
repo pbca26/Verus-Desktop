@@ -9,11 +9,13 @@ const {
 const btcnetworks = require('agama-wallet-lib/src/bitcoinjs-networks');
 const dpowCoins = require('agama-wallet-lib/src/electrum-servers-dpow');
 
-// TODO: dpow confs cache storage, eth/erc20 pending txs cache 
+// TODO: dpow confs cache storage, eth/erc20 pending txs cache
 
 module.exports = (api) => {
   api.updatePendingTxCache = (network, txid, options) => {
-    if (options.remove &&
+    network = network.toUpperCase();
+
+    if (options.hasOwnProperty('remove') &&
         api.electrumCache.pendingTx &&
         api.electrumCache.pendingTx[network] &&
         api.electrumCache.pendingTx[network][txid]) {
@@ -31,11 +33,19 @@ module.exports = (api) => {
         api.electrumCache.pendingTx[network] = {};
       }
 
-      api.electrumCache.pendingTx[network][txid] = {
-        pub: options.pub,
-        rawtx: options.rawtx,
-      };
-      api.log(`pending txs cache add ${network} txid ${txid} pub ${options.pub}`, 'spv.cache.pending');
+      if (!api.electrumCache.pendingTx[network][txid]) {
+        api.electrumCache.pendingTx[network][txid] = api.electrum.coinData[network.toLowerCase()].nspv ? {
+          pub: options.pub,
+          rawtx: options.rawtx,
+          value: options.value || null, // nspv pending tx workaround
+        } : {
+          pub: options.pub,
+          rawtx: options.rawtx,
+        };
+        api.log(`pending txs cache add ${network} txid ${txid} pub ${options.pub}`, 'spv.cache.pending');
+      } else {
+        api.log(`pending txs cache ${network} txid ${txid} already exists`, 'spv.cache.pending');
+      }
     }
 
     api.log('pending txs cache', 'spv.cache.pending');
@@ -52,9 +62,13 @@ module.exports = (api) => {
       
       for (let key in _txs) {
         if (_txs[key].pub === pub) {
-          _items.push({
+          _items.push(api.electrum.coinData[network.toLowerCase()].nspv ? {
             txid: key,
-            rawtx: api.electrumCache.pendingTx[network][key].rawtx, 
+            rawtx: api.electrumCache.pendingTx[network][key].rawtx,
+            value: api.electrumCache.pendingTx[network][key].value, // nspv pending tx workaround
+          } : {
+            txid: key,
+            rawtx: api.electrumCache.pendingTx[network][key].rawtx,
           });
         }
       }
@@ -178,7 +192,7 @@ module.exports = (api) => {
         api.electrumCache[network].verboseTx = {};
       }
 
-      const _pendingTxFromCache = api.findPendingTxRawById(network, txid);
+      const _pendingTxFromCache = api.findPendingTxRawById(network.toUpperCase(), txid);
       
       if (_pendingTxFromCache) {
         api.log(`${network} ${txid} get from pending txs cache`, 'spv.cache.transaction.pending');
@@ -188,13 +202,11 @@ module.exports = (api) => {
         
         if (api.electrum.coinData[network.toLowerCase()].nspv) {
           if (!api.electrumCache[network].tx[txid]) {
+            const nspvWrapper = api.nspvWrapper(network.toLowerCase());
             api.log(`nspv raw input tx ${txid}`, 'spv.cache');
 
-            api.nspvRequest(
-              network.toLowerCase(),
-              'gettransaction',
-              [txid],
-            )
+            
+            nspvWrapper.blockchainTransactionGet(txid, true)
             .then((nspvGetTx) => {
               if (nspvGetTx &&
                   nspvGetTx.hasOwnProperty('hex')) {

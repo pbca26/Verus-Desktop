@@ -29,7 +29,8 @@ module.exports = (api) => {
         api.log(body, 'spv.nspv.req');
         // TODO: proper error handling in ecl calls
         try {
-          resolve(JSON.parse(body));
+          if (JSON) resolve(JSON.parse(body));
+          else resolve('error');
         } catch (e) {
           console.log(e);
           resolve('json parse error');
@@ -136,7 +137,13 @@ module.exports = (api) => {
                 nspvListunspent.result &&
                 nspvListunspent.result === 'success') {
               for (let i = 0; i < nspvListunspent.utxos.length; i++) {
-                nspvUtxos.push({
+                nspvUtxos.push(network.toLowerCase() === 'kmd' ? {
+                  tx_hash: nspvListunspent.utxos[i].txid,
+                  height: nspvListunspent.utxos[i].height,
+                  value: toSats(nspvListunspent.utxos[i].value),
+                  rewards: toSats(nspvListunspent.utxos[i].rewards),
+                  tx_pos: nspvListunspent.utxos[i].vout,
+                } : {
                   tx_hash: nspvListunspent.utxos[i].txid,
                   height: nspvListunspent.utxos[i].height,
                   value: toSats(nspvListunspent.utxos[i].value),
@@ -147,6 +154,52 @@ module.exports = (api) => {
               resolve(nspvUtxos);
             } else {
               resolve('unable to get utxos');
+            }
+          });
+        });
+      },
+      blockchainTransactionGet: (__txid, returnValue) => {
+        return new Promise((resolve, reject) => {
+          api.nspvRequest(
+            network.toLowerCase(),
+            'gettransaction',
+            [__txid],
+          )
+          .then((nspvGetTx) => {
+            if (returnValue) {
+              resolve(nspvGetTx);
+            } else {
+              if (nspvGetTx &&
+                  nspvGetTx.hasOwnProperty('hex')) {
+                resolve(nspvGetTx.hex);
+              } else {
+                api.log(`nspv unable to get raw input tx ${__txid}`, 'spv.cache');
+                resolve('unable to get raw transaction');
+              }
+            }
+          });
+        });
+      },
+      blockchainTransactionBroadcast: (__rawtx, returnValue) => {
+        return new Promise((resolve, reject) => {
+          api.nspvRequest(
+            network.toLowerCase(),
+            'broadcast',
+            [__rawtx],
+          )
+          .then((nspvBroadcast) => {
+            if (returnValue) {
+              resolve(nspvBroadcast);
+            } else {
+              if (nspvBroadcast &&
+                  nspvBroadcast.result &&
+                  nspvBroadcast.result === 'success' &&
+                  nspvBroadcast.expected === nspvBroadcast.broadcast) {
+                resolve(nspvBroadcast.broadcast);
+              } else {
+                api.log(`nspv unable to push transaction ${__rawtx}`, 'spv.cache');
+                resolve('unable to push raw transaction');
+              }
             }
           });
         });
