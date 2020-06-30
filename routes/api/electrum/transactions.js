@@ -83,9 +83,6 @@ module.exports = (api) => {
 
             if (currentHeight &&
                 Number(currentHeight) > 0) {
-              console.log('transactions currheight =>>');
-              console.log(currentHeight);
-
               ecl.blockchainAddressGetHistory(walletId)
               .then((json) => {
                 if (json &&

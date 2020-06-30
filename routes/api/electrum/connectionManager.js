@@ -11,7 +11,7 @@ const PING_TIME = 60;
 let electrumServers = {};
 let lock = {};
 
-getProtocolVersion = (_ecl) => {
+getProtocolVersion = (_ecl, api) => {
   let protocolVersion;
   
   return new Promise((resolve, reject) => {
@@ -19,7 +19,7 @@ getProtocolVersion = (_ecl) => {
     .then((serverData) => {
       if (serverData &&
           JSON.stringify(serverData).indexOf('server.version already sent') > -1) {
-        console.log('server version already sent');
+        api.log('server version already sent', 'ecl.manager');
         resolve('sent');
       }
 
@@ -44,7 +44,7 @@ getProtocolVersion = (_ecl) => {
         resolve(-777);
       }
 
-      console.log(`ecl ${`${_ecl.host}:${_ecl.port}:${_ecl.protocol || 'tcp'}`} protocol version: ${protocolVersion}`);
+      api.log(`ecl ${`${_ecl.host}:${_ecl.port}:${_ecl.protocol || 'tcp'}`} protocol version: ${protocolVersion}`, 'ecl.manager');
       resolve(protocolVersion);
     });
   });
@@ -55,7 +55,7 @@ module.exports = (api) => {
 
   api.eclManager = {
     getServer: async(coin, customServer) => {
-      if (customServer) console.log(`custom server ${customServer.ip}:${customServer.port}:${customServer.proto}`);
+      if (customServer) api.log(`custom server ${customServer.ip}:${customServer.port}:${customServer.proto}`, 'ecl.manager');
       if ((customServer && !electrumServers[coin][`${customServer.ip}:${customServer.port}:${customServer.proto}`]) ||
           !electrumServers[coin] ||
           (electrumServers[coin] && !Object.keys(electrumServers[coin]).length)) {
@@ -75,13 +75,13 @@ module.exports = (api) => {
           ];
         }
 
-        console.log('ecl server doesnt exist yet, lets add')
+        api.log('ecl server doesnt exist yet, lets add', 'ecl.manager')
 
         const ecl = new api.electrumJSCore(serverStr[1], serverStr[0], serverStr[2]);
-        console.log(`ecl conn ${serverStr}`);
+        api.log(`ecl conn ${serverStr}`, 'ecl.manager');
         ecl.connect();
-        console.log(`ecl req protocol ${serverStr}`);
-        const eclProtocolVersion = await getProtocolVersion(ecl);
+        api.log(`ecl req protocol ${serverStr}`, 'ecl.manager');
+        const eclProtocolVersion = await getProtocolVersion(ecl, api);
         
         if (!electrumServers[coin]) {
           electrumServers[coin] = {};
@@ -96,12 +96,12 @@ module.exports = (api) => {
         return electrumServers[coin][serverStr.join(':')].server;
       } else {
         if (customServer) {
-          console.log(`ecl ${coin} server exists, custom server param provided`);
+          api.log(`ecl ${coin} server exists, custom server param provided`, 'ecl.manager');
           let ecl = electrumServers[coin][`${customServer.ip}:${customServer.port}:${customServer.proto}`];
           ecl.lastReq = Date.now();
           return ecl.server;
         } else {
-          console.log(`ecl ${coin} server exists`);
+          api.log(`ecl ${coin} server exists`, 'ecl.manager');
           let ecl = Object.keys(electrumServers[coin]) > 1 ? electrumServers[coin][Object.keys(electrumServers[coin])[getRandomIntInclusive(0, Object.keys(electrumServers[coin]).length)]] : electrumServers[coin][Object.keys(electrumServers[coin])[0]];
           ecl.lastReq = Date.now();
           return ecl.server;
@@ -113,32 +113,32 @@ module.exports = (api) => {
   api.initElectrumManager = () => {
     setInterval(() => {
       for (let coin in electrumServers) {
-        console.log(`ecl check coin ${coin}`);
+        api.log(`ecl check coin ${coin}`, 'ecl.manager');
 
         for (let serverStr in electrumServers[coin]) {
           const pingSecPassed = checkTimestamp(electrumServers[coin][serverStr].lastPing);
-          console.log(`ping sec passed ${pingSecPassed}`);
+          api.log(`ping sec passed ${pingSecPassed}`, 'ecl.manager');
           
           if (pingSecPassed > PING_TIME) {
-            console.log(`ecl ${coin} ${serverStr} ping limit passed, send ping`);
+            api.log(`ecl ${coin} ${serverStr} ping limit passed, send ping`, 'ecl.manager');
 
             getProtocolVersion(electrumServers[coin][serverStr].server)
             .then((eclProtocolVersion) => {
               if (eclProtocolVersion === 'sent') {
-                console.log(`ecl ${coin} ${serverStr} ping success`);
+                api.log(`ecl ${coin} ${serverStr} ping success`, 'ecl.manager');
                 electrumServers[coin][serverStr].lastPing = Date.now();
               } else {
-                console.log(`ecl ${coin} ${serverStr} ping fail, remove server`);
+                api.log(`ecl ${coin} ${serverStr} ping fail, remove server`, 'ecl.manager');
                 delete electrumServers[coin][serverStr];
               }
             });
           }
 
           const reqSecPassed = checkTimestamp(electrumServers[coin][serverStr].lastReq);
-          console.log(`req sec passed ${reqSecPassed}`);
+          api.log(`req sec passed ${reqSecPassed}`, 'ecl.manager');
           
           if (reqSecPassed > MAX_IDLE_TIME) {
-            console.log(`ecl ${coin} ${serverStr} req limit passed, disconnect server`);
+            api.log(`ecl ${coin} ${serverStr} req limit passed, disconnect server`, 'ecl.manager');
             electrumServers[coin][serverStr].server.close();
             delete electrumServers[coin][serverStr];
           }
