@@ -20,7 +20,6 @@ module.exports = (api) => {
     if (full &&
         !ecl.insight) {
       return new Promise((resolve, reject) => {
-        ecl.connect();
         ecl.blockchainAddressListunspent(_address)
         .then((_utxoJSON) => {
           if (_utxoJSON &&
@@ -28,8 +27,13 @@ module.exports = (api) => {
             let formattedUtxoList = [];
             let _utxo = [];
 
-            api.electrumGetCurrentBlock(network)
+            api.electrumGetCurrentBlock(network, api.electrum.coinData[network.toLowerCase()].nspv)
             .then((currentHeight) => {
+              if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                nspvGetinfo = JSON.parse(JSON.stringify(currentHeight));
+                currentHeight = nspvGetinfo.height;
+              }
+                
               if (currentHeight &&
                   Number(currentHeight) > 0) {
                 // filter out unconfirmed utxos
@@ -40,7 +44,6 @@ module.exports = (api) => {
                 }
 
                 if (!_utxo.length) { // no confirmed utxo
-                  ecl.close();
                   resolve('no valid utxo');
                 } else {
                   // TODO: nspv don't request individual transaction raw hex
@@ -113,6 +116,7 @@ module.exports = (api) => {
                             };
 
                             if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                              _resolveObj.dpowSecured = nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
                               _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
                               _resolveObj.verified = true;
                               resolve(_resolveObj);
@@ -204,8 +208,6 @@ module.exports = (api) => {
                     });
                   }))
                   .then(promiseResult => {
-                    ecl.close();
-
                     if (!_atLeastOneDecodeTxFailed) {
                       api.log(promiseResult, 'spv.listunspent');
                       resolve(promiseResult);
@@ -216,23 +218,18 @@ module.exports = (api) => {
                   });
                 }
               } else {
-                ecl.close();
                 resolve('cant get current height');
               }
             });
           } else {
-            ecl.close();
             resolve(api.CONNECTION_ERROR_OR_INCOMPLETE_DATA);
           }
         });
       });
     } else {
       return new Promise((resolve, reject) => {
-        ecl.connect();
         ecl.blockchainAddressListunspent(_address)
         .then((json) => {
-          ecl.close();
-
           if (json &&
               json.length) {
             resolve(json);
@@ -271,7 +268,6 @@ module.exports = (api) => {
       } else {
         api.electrum.listunspent(ecl, req.query.address, network)
         .then((listunspent) => {
-          if (!api.electrum.coinData[network.toLowerCase()].nspv) ecl.close();
           api.log('electrum listunspent ==>', 'spv.listunspent');
 
           const retObj = {

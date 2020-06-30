@@ -202,13 +202,10 @@ module.exports = (api) => {
         
         if (api.electrum.coinData[network.toLowerCase()].nspv) {
           if (!api.electrumCache[network].tx[txid]) {
+            const nspvWrapper = api.nspvWrapper(network.toLowerCase());
             api.log(`nspv raw input tx ${txid}`, 'spv.cache');
 
-            api.nspvRequest(
-              network.toLowerCase(),
-              'gettransaction',
-              [txid],
-            )
+            nspvWrapper.blockchainTransactionGet(txid, true)
             .then((nspvGetTx) => {
               if (nspvGetTx &&
                   nspvGetTx.hasOwnProperty('hex')) {
