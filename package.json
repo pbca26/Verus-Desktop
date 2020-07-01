@@ -1,7 +1,7 @@
 {
   "name": "verus-desktop",
   "productName": "Verus-Desktop",
-  "version": "0.6.4-3",
+  "version": "0.7.0-4",
   "description": "Verus Desktop Wallet App",
   "main": "main.js",
   "scripts": {
@@ -18,7 +18,7 @@
   "engines": {
     "node": ">11"
   },
-  "repository": "https://github.com/VerusCoin/Agama/",
+  "repository": "https://github.com/VerusCoin/Verus-Desktop/",
   "homepage": "https://veruscoin.io",
   "keywords": [
     "agama",
@@ -37,11 +37,11 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "cross-env": "^5.2.0",
+    "cross-env": "^5.2.1",
     "electron": "^4.2.12",
-    "electron-builder": "21.2.0",
+    "electron-builder": "22.6.1",
     "electron-devtools-installer": "^2.2.4",
-    "electron-rebuild": "^1.8.8"
+    "electron-rebuild": "^1.11.0"
   },
   "dependencies": {
     "adm-zip": "^0.4.7",
@@ -56,7 +56,7 @@
     "buffer-reverse": "^1.0.1",
     "coinselect": "github:bitcoinjs/coinselect",
     "create-hash": "git://github.com/pbca26/createHash#electron-v4",
-    "ethers": "git://github.com/pbca26/ethers.js",
+    "ethers": "^4.0.44",
     "express": "^4.14.0",
     "fix-path": "^2.1.0",
     "fs-extra": "^7.0.0",
@@ -142,11 +142,13 @@
     }
   },
   "resolutions": {
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "js-yaml": "^3.13.1",
     "tar": "^4.4.8",
     "https-proxy-agent": "2.2.4",
     "mem": "4.0.0",
-    "bin-links": "1.1.6"
+    "bin-links": "1.1.6",
+    "yargs-parser": "^13.1.2",
+    "minimist": "^1.2.5"
   }
 }
