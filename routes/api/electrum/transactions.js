@@ -45,7 +45,6 @@ module.exports = (api) => {
         
         let ecl = {};
         
-        // TODO: refactor
         if (api.electrum.coinData[network.toLowerCase()].nspv) {
           ecl = api.nspvWrapper(network.toLowerCase());
         } else {
@@ -54,13 +53,11 @@ module.exports = (api) => {
         }
         
         api.log('electrum get_transactions ==>', 'spv.get_transactions');
-        ecl.connect();
         
         if (!config.full ||
             ecl.insight) {
           ecl.blockchainAddressGetHistory(walletId)
           .then((json) => {
-            ecl.close();
             api.log(json, 'spv.get_transactions');
 
             json = api.sortTransactions(json, 'timestamp');
@@ -86,9 +83,6 @@ module.exports = (api) => {
 
             if (currentHeight &&
                 Number(currentHeight) > 0) {
-              console.log('currheight');
-              console.log(currentHeight);
-
               ecl.blockchainAddressGetHistory(walletId)
               .then((json) => {
                 if (json &&
@@ -355,8 +349,6 @@ module.exports = (api) => {
                                     index++;
                                     
                                     if (index === json.length) {
-                                      ecl.close();
-
                                       if (isKv) {
                                         let _kvTx = [];
 
@@ -428,8 +420,6 @@ module.exports = (api) => {
                               index++;
 
                               if (index === json.length) {
-                                ecl.close();
-
                                 if (isKv) {
                                   let _kvTx = [];
 
@@ -473,8 +463,6 @@ module.exports = (api) => {
                         index++;
 
                         if (index === json.length) {
-                          ecl.close();
-
                           if (isKv) {
                             let _kvTx = [];
 
@@ -500,8 +488,6 @@ module.exports = (api) => {
                     });
                   });
                 } else {
-                  ecl.close();
-
                   const retObj = {
                     msg: 'success',
                     result: [],
@@ -538,10 +524,8 @@ module.exports = (api) => {
 
       api.log('electrum gettransaction =>', 'spv.gettransaction');
 
-      ecl.connect();
       ecl.blockchainTransactionGet(req.query.txid)
       .then((json) => {
-        ecl.close();
         api.log(json, 'spv.gettransaction');
 
         const retObj = {

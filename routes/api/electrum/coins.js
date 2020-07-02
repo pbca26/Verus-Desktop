@@ -12,7 +12,7 @@ module.exports = (api) => {
     }
   }
 
-  api.addElectrumCoin = (coin, enableNspv) => {
+  api.addElectrumCoin = async(coin, enableNspv) => {
     coin = coin.toLowerCase();
     const servers = api.electrumServers[coin].serverList;
     // select random server
@@ -83,7 +83,12 @@ module.exports = (api) => {
       txfee: coin === 'btc' ? 'calculated' : api.electrumServers[coin].txfee,
     };
 
-    if (enableNspv) api.electrum.coinData[coin].nspv = true;
+    if (enableNspv) {
+      api.electrum.coinData[coin].nspv = true;
+    } else {
+      // wait for spv connection to be established
+      const ecl = await api.ecl(coin);
+    }
 
     if (randomServer) {
       api.log(`random ${coin} electrum server ${randomServer.ip}:${randomServer.port}`, 'spv.coin');
@@ -101,7 +106,6 @@ module.exports = (api) => {
         priv: _keys.priv,
         pub: _keys.pub,
       };
-
     } else if (api.seed) {
       api.auth(api.seed, true);
     }
@@ -131,9 +135,9 @@ module.exports = (api) => {
     }
   });*/
 
-  api.post('/electrum/coins/activate', (req, res, next) => {
+  api.post('/electrum/coins/activate', async(req, res, next) => {
     if (api.checkToken(req.body.token)) {
-      const result = api.addElectrumCoin(
+      const result = await api.addElectrumCoin(
         req.body.chainTicker,
         req.body.launchConfig.startupParams && req.body.launchConfig.startupParams.nspv
       );

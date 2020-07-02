@@ -62,16 +62,15 @@ module.exports = (api) => {
   api.nspvWrapper = (network) => {
     return {
       connect: () => {
-        console.log('nspv connect');
+        api.log('nspv connect', 'nspv');
       },
       close: () => {
-        console.log('nspv close');
+        api.log('nspv close', 'nspv');
       },
       blockchainAddressGetHistory: (__address) => {
         return new Promise((resolve, reject) => {
           let _nspvTxs = [];
 
-          console.log('nspv wrapper', 'blockchainAddressGetHistory');
           api.nspvRequest(
             network.toLowerCase(),
             'listtransactions',
@@ -89,7 +88,6 @@ module.exports = (api) => {
                 });
               }
 
-              console.log(_nspvTxs)
               resolve(_nspvTxs);
             } else {
               resolve('unable to get transactions history');
@@ -108,15 +106,10 @@ module.exports = (api) => {
             if (nspvTxHistory &&
                 nspvTxHistory.result &&
                 nspvTxHistory.result === 'success') {
-              console.log(nspvTxHistory)
               resolve({
                 confirmed: toSats(nspvTxHistory.balance),
                 unconfirmed: 0,
               });
-              console.log({
-                confirmed: toSats(nspvTxHistory.balance),
-                unconfirmed: 0,
-              })
             } else {
               resolve('unable to get balance');
             }

@@ -73,7 +73,6 @@ module.exports = (api) => {
         _address = ecl.protocolVersion && ecl.protocolVersion === '1.4' ? pubToElectrumScriptHashHex(address, btcnetworks[network.toLowerCase()] || btcnetworks.kmd) : address;
       }
       
-      ecl.connect();
       ecl.blockchainAddressGetBalance(_address)
       .then((json) => {
         if (json &&
@@ -108,7 +107,7 @@ module.exports = (api) => {
 
                   if (api.electrum.coinData[network.toLowerCase()].nspv) {
                     let _utxosNspv = [];
-
+                    
                     for (let i = 0; i < _utxo.length; i++) {
                       interestTotal += Number(_utxo[i].rewards);
                     }
@@ -181,8 +180,6 @@ module.exports = (api) => {
                     });
                   }
                 } else {
-                  ecl.close();
-
                   resolve({
                     confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),
                     unconfirmed: Number((0.00000001 * json.unconfirmed).toFixed(8)),
@@ -190,8 +187,6 @@ module.exports = (api) => {
                   });
                 }
               } else {
-                ecl.close();
-
                 resolve({
                   confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),
                   unconfirmed: Number((0.00000001 * json.unconfirmed).toFixed(8)),
@@ -200,7 +195,6 @@ module.exports = (api) => {
               }
             });
           } else {
-            ecl.close();
             api.log('electrum getbalance ==>', 'spv.getbalance');
             api.log(json, 'spv.getbalance');
 
@@ -211,7 +205,6 @@ module.exports = (api) => {
             })
           }
         } else {
-          ecl.close();
           reject(new Error(api.CONNECTION_ERROR_OR_INCOMPLETE_DATA));
         }
       })

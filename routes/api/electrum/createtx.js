@@ -497,11 +497,8 @@ module.exports = (api) => {
                           });
                         } else {
                           ecl = await api.ecl(network);
-                          ecl.connect();
                           ecl.blockchainTransactionBroadcast(_rawtx)
-                          .then((txid) => {
-                            ecl.close();
-    
+                          .then((txid) => {    
                             let _rawObj = {
                               utxoSet: inputs,
                               change: _change,
@@ -632,7 +629,6 @@ module.exports = (api) => {
           ecl = await api.ecl(_network);
         }
 
-        ecl.connect();
         ecl.blockchainTransactionBroadcast(rawtx)
         .then((json) => {
           if (api.electrum.coinData[_network.toLowerCase()].nspv) {

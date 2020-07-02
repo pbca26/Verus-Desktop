@@ -20,7 +20,6 @@ module.exports = (api) => {
     if (full &&
         !ecl.insight) {
       return new Promise((resolve, reject) => {
-        ecl.connect();
         ecl.blockchainAddressListunspent(_address)
         .then((_utxoJSON) => {
           if (_utxoJSON &&
@@ -47,7 +46,6 @@ module.exports = (api) => {
                 }
 
                 if (!_utxo.length) { // no confirmed utxo
-                  ecl.close();
                   resolve('no valid utxo');
                 } else {
                   if (api.electrum.coinData[network.toLowerCase()].nspv) {
@@ -124,7 +122,7 @@ module.exports = (api) => {
 
                           // api.log('decoded tx =>', true);
                           // api.log(decodedTx, true);
-
+                          
                           if (!decodedTx) {
                             _atLeastOneDecodeTxFailed = true;
                             resolve('cant decode tx');
@@ -253,38 +251,31 @@ module.exports = (api) => {
                           }
                         });
                       });
-                    }))
-                    .then(promiseResult => {
-                      ecl.close();
-
-                      if (!_atLeastOneDecodeTxFailed) {
-                        api.log(promiseResult, 'spv.listunspent');
-                        resolve(promiseResult);
-                      } else {
-                        api.log('listunspent error, cant decode tx(s)', 'spv.listunspent');
-                        resolve('decode error');
-                      }
                     });
-                  }
+                  }))
+                  .then(promiseResult => {
+                    if (!_atLeastOneDecodeTxFailed) {
+                      api.log(promiseResult, 'spv.listunspent');
+                      resolve(promiseResult);
+                    } else {
+                      api.log('listunspent error, cant decode tx(s)', 'spv.listunspent');
+                      resolve('decode error');
+                    }
+                  });
                 }
               } else {
-                ecl.close();
                 resolve('cant get current height');
               }
             });
           } else {
-            ecl.close();
             resolve(api.CONNECTION_ERROR_OR_INCOMPLETE_DATA);
           }
         });
       });
     } else {
       return new Promise((resolve, reject) => {
-        ecl.connect();
         ecl.blockchainAddressListunspent(_address)
         .then((json) => {
-          ecl.close();
-
           if (json &&
               json.length) {
             resolve(json);
@@ -323,7 +314,6 @@ module.exports = (api) => {
       } else {
         api.electrum.listunspent(ecl, req.query.address, network)
         .then((listunspent) => {
-          if (!api.electrum.coinData[network.toLowerCase()].nspv) ecl.close();
           api.log('electrum listunspent ==>', 'spv.listunspent');
 
           const retObj = {

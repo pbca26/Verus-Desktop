@@ -124,6 +124,10 @@ api = require('./api/electrum/csv.js')(api);
 api = require('./api/electrum/utils.js')(api);
 api = require('./api/electrum/remove')(api);
 api = require('./api/electrum/send.js')(api);
+api = require('./api/electrum/connectionManager.js')(api);
+
+// init electrum connection manager loop
+api.initElectrumManager();
 
 // nspv
 api = require('./api/electrum/nspv.js')(api);

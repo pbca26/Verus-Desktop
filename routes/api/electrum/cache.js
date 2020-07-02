@@ -205,7 +205,6 @@ module.exports = (api) => {
             const nspvWrapper = api.nspvWrapper(network.toLowerCase());
             api.log(`nspv raw input tx ${txid}`, 'spv.cache');
 
-            
             nspvWrapper.blockchainTransactionGet(txid, true)
             .then((nspvGetTx) => {
               if (nspvGetTx &&
