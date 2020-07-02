@@ -251,17 +251,17 @@ module.exports = (api) => {
                           }
                         });
                       });
+                    }))
+                    .then(promiseResult => {
+                      if (!_atLeastOneDecodeTxFailed) {
+                        api.log(promiseResult, 'spv.listunspent');
+                        resolve(promiseResult);
+                      } else {
+                        api.log('listunspent error, cant decode tx(s)', 'spv.listunspent');
+                        resolve('decode error');
+                      }
                     });
-                  }))
-                  .then(promiseResult => {
-                    if (!_atLeastOneDecodeTxFailed) {
-                      api.log(promiseResult, 'spv.listunspent');
-                      resolve(promiseResult);
-                    } else {
-                      api.log('listunspent error, cant decode tx(s)', 'spv.listunspent');
-                      resolve('decode error');
-                    }
-                  });
+                  }
                 }
               } else {
                 resolve('cant get current height');
