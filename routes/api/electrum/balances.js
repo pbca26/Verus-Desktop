@@ -105,63 +105,80 @@ module.exports = (api) => {
                     _utxo.length) {
                   let interestTotal = 0;
 
-                  Promise.all(_utxo.map((_utxoItem, index) => {
-                    return new Promise((resolve, reject) => {
-                      api.getTransaction(_utxoItem.tx_hash, network, ecl)
-                      .then((_rawtxJSON) => {
-                        api.log('electrum gettransaction ==>', 'spv.getbalance');
-                        api.log(`${index} | ${_rawtxJSON.length - 1}`, 'spv.getbalance');
-                        api.log(_rawtxJSON, 'spv.getbalance');
+                  if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                    let _utxosNspv = [];
+                    
+                    for (let i = 0; i < _utxo.length; i++) {
+                      interestTotal += Number(_utxo[i].rewards);
+                    }
 
-                        // decode tx
-                        const _network = api.getNetworkData(network);
-                        let decodedTx;
-
-                        if (api.getTransactionDecoded(_utxoItem.tx_hash, network)) {
-                          decodedTx = api.getTransactionDecoded(_utxoItem.tx_hash, network);
-                        } else {
-                          decodedTx = api.electrumJSTxDecoder(
-                            _rawtxJSON,
-                            network,
-                            _network,
-                          );
-                          api.getTransactionDecoded(_utxoItem.tx_hash, network, decodedTx);
-                        }
-
-                        if (decodedTx &&
-                            decodedTx.format &&
-                            decodedTx.format.locktime > 0) {
-                          interestTotal += kmdCalcInterest(
-                            decodedTx.format.locktime,
-                            _utxoItem.value,
-                            _utxoItem.height,
-                            true
-                          );
-
-                          const _locktimeSec = checkTimestamp(decodedTx.format.locktime * 1000);
-                          const interestRulesCheckPass = !decodedTx.format.locktime || Number(decodedTx.format.locktime) === 0 || _locktimeSec > UTXO_1MONTH_THRESHOLD_SECONDS ? false : true;
-                          
-                          if (!interestRulesCheckPass) {
-                            utxoIssues = true;
-                          }
-                          api.log(`interest ${interestTotal} for txid ${_utxoItem.tx_hash}`, 'interest');
-                        }
-
-                        api.log('decoded tx =>', 'spv.getbalance');
-                        api.log(decodedTx, 'spv.getbalance');
-
-                        resolve(true);
-                      });
-                    });
-                  }))
-                  .then(() => {
                     resolve({
                       confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),
                       unconfirmed: Number((0.00000001 * json.unconfirmed).toFixed(8)),
-                      utxoIssues,
-                      interest: interestTotal === 0 || interestTotal < 0 ? null : Number((0.00000001 * interestTotal).toFixed(8))
+                      utxoIssues: false,
+                      interest: interestTotal === 0 || interestTotal < 0 ? null : Number((0.00000001 * interestTotal).toFixed(8)),
                     });
-                  });
+                  } else {
+                    Promise.all(_utxo.map((_utxoItem, index) => {
+                      return new Promise((resolve, reject) => {
+                        api.getTransaction(_utxoItem.tx_hash, network, ecl)
+                        .then((_rawtxJSON) => {
+                          api.log('electrum gettransaction ==>', 'spv.getbalance');
+                          api.log(`${index} | ${_rawtxJSON.length - 1}`, 'spv.getbalance');
+                          api.log(_rawtxJSON, 'spv.getbalance');
+
+                          // decode tx
+                          const _network = api.getNetworkData(network);
+                          let decodedTx;
+
+                          if (api.getTransactionDecoded(_utxoItem.tx_hash, network)) {
+                            decodedTx = api.getTransactionDecoded(_utxoItem.tx_hash, network);
+                          } else {
+                            decodedTx = api.electrumJSTxDecoder(
+                              _rawtxJSON,
+                              network,
+                              _network,
+                            );
+                            api.getTransactionDecoded(_utxoItem.tx_hash, network, decodedTx);
+                          }
+
+                          if (decodedTx &&
+                              decodedTx.format &&
+                              decodedTx.format.locktime > 0) {
+                            interestTotal += kmdCalcInterest(
+                              decodedTx.format.locktime,
+                              _utxoItem.value,
+                              _utxoItem.height,
+                              true
+                            );
+
+                            const _locktimeSec = checkTimestamp(decodedTx.format.locktime * 1000);
+                            const interestRulesCheckPass = !decodedTx.format.locktime || Number(decodedTx.format.locktime) === 0 || _locktimeSec > UTXO_1MONTH_THRESHOLD_SECONDS ? false : true;
+                            
+                            if (!interestRulesCheckPass) {
+                              utxoIssues = true;
+                            }
+                            api.log(`interest ${interestTotal} for txid ${_utxoItem.tx_hash}`, 'interest');
+                          }
+
+                          api.log('decoded tx =>', 'spv.getbalance');
+                          api.log(decodedTx, 'spv.getbalance');
+
+                          resolve(true);
+                        });
+                      });
+                    }))
+                    .then(() => {
+                      ecl.close();
+
+                      resolve({
+                        confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),
+                        unconfirmed: Number((0.00000001 * json.unconfirmed).toFixed(8)),
+                        utxoIssues,
+                        interest: interestTotal === 0 || interestTotal < 0 ? null : Number((0.00000001 * interestTotal).toFixed(8))
+                      });
+                    });
+                  }
                 } else {
                   resolve({
                     confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),

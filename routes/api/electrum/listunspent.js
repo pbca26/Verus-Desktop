@@ -40,170 +40,216 @@ module.exports = (api) => {
                 for (let i = 0; i < _utxoJSON.length; i++) {
                   if (Number(currentHeight) - Number(_utxoJSON[i].height) !== 0) {
                     _utxo.push(_utxoJSON[i]);
+                    console.log('utxo '+ i);
+                    console.log(_utxoJSON[i]);
                   }
                 }
 
                 if (!_utxo.length) { // no confirmed utxo
                   resolve('no valid utxo');
                 } else {
-                  // TODO: nspv don't request individual transaction raw hex
-                  Promise.all(_utxo.map((_utxoItem, index) => {
-                    return new Promise((resolve, reject) => {
-                      api.getTransaction(_utxoItem.tx_hash, network, ecl)
-                      .then((_rawtxJSON) => {
-                        api.log('electrum gettransaction ==>', 'spv.listunspent');
-                        api.log(`${index} | ${(_rawtxJSON.length - 1)}`, 'spv.listunspent');
-                        api.log(_rawtxJSON, 'spv.listunspent');
+                  if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                    let _utxosNspv = [];
 
-                        // decode tx
-                        const _network = api.getNetworkData(network);
-                        let decodedTx;
+                    if (network === 'komodo' ||
+                        network.toLowerCase() === 'kmd') {
+                      for (let i = 0; i < _utxoJSON.length; i++) {
+                        const _utxoItem = _utxoJSON[i];
 
-                        if (api.getTransactionDecoded(_utxoItem.tx_hash, network)) {
-                          decodedTx = api.getTransactionDecoded(_utxoItem.tx_hash, network);
-                        } else {
-                          decodedTx = api.electrumJSTxDecoder(
-                            _rawtxJSON,
-                            network,
-                            _network
-                          );
-                          api.getTransactionDecoded(
-                            _utxoItem.tx_hash,
-                            network,
-                            decodedTx
-                          );
-                        }
+                        _utxosNspv.push({
+                          txid: _utxoItem.tx_hash,
+                          vout: _utxoItem.tx_pos,
+                          address,
+                          amount: Number(_utxoItem.value) * 0.00000001,
+                          amountSats: _utxoItem.value,
+                          interest: _utxoItem.rewards >= 0 ? Number((_utxoItem.rewards * 0.00000001).toFixed(8)) : 0,
+                          interestSats: _utxoItem.rewards >= 0 ? _utxoItem.rewards : 0,
+                          confirmations: Number(_utxoItem.height) === 0 ? 0 : currentHeight - _utxoItem.height,
+                          height: _utxoItem.height,
+                          currentHeight,
+                          spendable: true,
+                          dpowSecured: nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
+                          verified: true,
+                        });
+                      }
+                    } else {
+                      for (let i = 0; i < _utxoJSON.length; i++) {
+                        const _utxoItem = _utxoJSON[i];
 
-                        // api.log('decoded tx =>', true);
-                        // api.log(decodedTx, true);
+                        _utxosNspv.push({
+                          txid: _utxoItem.tx_hash,
+                          vout: _utxoItem.tx_pos,
+                          address,
+                          amount: Number(_utxoItem.value) * 0.00000001,
+                          amountSats: _utxoItem.value,
+                          confirmations: Number(_utxoItem.height) === 0 ? 0 : currentHeight - _utxoItem.height,
+                          height: _utxoItem.height,
+                          currentHeight,
+                          spendable: true,
+                          dpowSecured: nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
+                          verified: true,
+                        });
+                      }
+                    }
+                    resolve(_utxosNspv);
+                  } else {
+                    Promise.all(_utxo.map((_utxoItem, index) => {
+                      return new Promise((resolve, reject) => {
+                        api.getTransaction(_utxoItem.tx_hash, network, ecl)
+                        .then((_rawtxJSON) => {
+                          api.log('electrum gettransaction ==>', 'spv.listunspent');
+                          api.log(`${index} | ${(_rawtxJSON.length - 1)}`, 'spv.listunspent');
+                          api.log(_rawtxJSON, 'spv.listunspent');
 
-                        if (!decodedTx) {
-                          _atLeastOneDecodeTxFailed = true;
-                          resolve('cant decode tx');
-                        } else {
-                          if (network === 'komodo' ||
-                              network.toLowerCase() === 'kmd') {
-                            let interest = 0;
+                          // decode tx
+                          const _network = api.getNetworkData(network);
+                          let decodedTx;
 
-                            if (Number(_utxoItem.value) * 0.00000001 >= 10 &&
-                                decodedTx.format.locktime > 0) {
-                              interest = api.kmdCalcInterest(
-                                decodedTx.format.locktime,
-                                _utxoItem.value,
-                                _utxoItem.height,
-                                true
-                              );
-                            }
-
-                            const _locktimeSec = checkTimestamp(decodedTx.format.locktime * 1000);
-                            let _resolveObj = {
-                              txid: _utxoItem.tx_hash,
-                              vout: _utxoItem.tx_pos,
-                              address,
-                              amount: Number(_utxoItem.value) * 0.00000001,
-                              amountSats: _utxoItem.value,
-                              locktime: decodedTx.format.locktime,
-                              interest: interest >= 0 ? Number((interest * 0.00000001).toFixed(8)) : 0,
-                              interestSats: interest >= 0 ? interest : 0,
-                              timeElapsedFromLocktimeInSeconds: decodedTx.format.locktime ? _locktimeSec : 0,
-                              timeTill1MonthInterestStopsInSeconds: decodedTx.format.locktime ? (UTXO_1MONTH_THRESHOLD_SECONDS - _locktimeSec > 0 ? UTXO_1MONTH_THRESHOLD_SECONDS - _locktimeSec : 0) : 0,
-                              interestRulesCheckPass: !decodedTx.format.locktime || Number(decodedTx.format.locktime) === 0 || _locktimeSec > UTXO_1MONTH_THRESHOLD_SECONDS || _utxoItem.value < 1000000000 ? false : true,
-                              confirmations: Number(_utxoItem.height) === 0 ? 0 : currentHeight - _utxoItem.height,
-                              height: _utxoItem.height,
-                              currentHeight,
-                              spendable: true,
-                              verified: false,
-                            };
-
-                            if (api.electrum.coinData[network.toLowerCase()].nspv) {
-                              _resolveObj.dpowSecured = nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
-                              _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
-                              _resolveObj.verified = true;
-                              resolve(_resolveObj);
-                            } else {
-                              if (api.electrumCache[network] &&
-                                  api.electrumCache[network].verboseTx &&
-                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
-                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
-                                if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
-                                  _resolveObj.dpowSecured = true;
-                                } else {
-                                  _resolveObj.dpowSecured = false;
-                                }
-                              }
-
-                              // merkle root verification against another electrum server
-                              if (verify) {
-                                api.verifyMerkleByCoin(
-                                  api.findCoinName(network),
-                                  _utxoItem.tx_hash,
-                                  _utxoItem.height
-                                )
-                                .then((verifyMerkleRes) => {
-                                  if (verifyMerkleRes &&
-                                      verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
-                                    verifyMerkleRes = false;
-                                  }
-
-                                  _resolveObj.verified = verifyMerkleRes;
-                                  resolve(_resolveObj);
-                                });
-                              } else {
-                                resolve(_resolveObj);
-                              }
-                            }
+                          if (api.getTransactionDecoded(_utxoItem.tx_hash, network)) {
+                            decodedTx = api.getTransactionDecoded(_utxoItem.tx_hash, network);
                           } else {
-                            let _resolveObj = {
-                              txid: _utxoItem.tx_hash,
-                              vout: _utxoItem.tx_pos,
-                              address,
-                              amount: Number(_utxoItem.value) * 0.00000001,
-                              amountSats: _utxoItem.value,
-                              confirmations: Number(_utxoItem.height) === 0 ? 0 : currentHeight - _utxoItem.height,
-                              height: _utxoItem.height,
-                              currentHeight,
-                              spendable: true,
-                              verified: false,
-                            };
+                            decodedTx = api.electrumJSTxDecoder(
+                              _rawtxJSON,
+                              network,
+                              _network
+                            );
+                            api.getTransactionDecoded(
+                              _utxoItem.tx_hash,
+                              network,
+                              decodedTx
+                            );
+                          }
 
-                            if (api.electrum.coinData[network.toLowerCase()].nspv) {
-                              _resolveObj.dpowSecured = Number(currentHeight) >= Number(_utxoItem.height) ? true : false,
-                              _resolveObj.verified = true;
-                              resolve(_resolveObj);
-                            } else {
-                              if (api.electrumCache[network] &&
-                                  api.electrumCache[network].verboseTx &&
-                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
-                                  api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
-                                if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
-                                  _resolveObj.dpowSecured = true;
-                                } else {
-                                  _resolveObj.dpowSecured = false;
-                                }
+                          // api.log('decoded tx =>', true);
+                          // api.log(decodedTx, true);
+                          
+                          if (!decodedTx) {
+                            _atLeastOneDecodeTxFailed = true;
+                            resolve('cant decode tx');
+                          } else {
+                            if (network === 'komodo' ||
+                                network.toLowerCase() === 'kmd') {
+                              let interest = 0;
+
+                              if (Number(_utxoItem.value) * 0.00000001 >= 10 &&
+                                  decodedTx.format.locktime > 0) {
+                                interest = api.kmdCalcInterest(
+                                  decodedTx.format.locktime,
+                                  _utxoItem.value,
+                                  _utxoItem.height,
+                                  true
+                                );
                               }
 
-                              // merkle root verification against another electrum server
-                              if (verify) {
-                                api.verifyMerkleByCoin(
-                                  api.findCoinName(network),
-                                  _utxoItem.tx_hash,
-                                  _utxoItem.height
-                                )
-                                .then((verifyMerkleRes) => {
-                                  if (verifyMerkleRes &&
-                                      verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
-                                    verifyMerkleRes = false;
-                                  }
+                              const _locktimeSec = checkTimestamp(decodedTx.format.locktime * 1000);
+                              let _resolveObj = {
+                                txid: _utxoItem.tx_hash,
+                                vout: _utxoItem.tx_pos,
+                                address,
+                                amount: Number(_utxoItem.value) * 0.00000001,
+                                amountSats: _utxoItem.value,
+                                locktime: decodedTx.format.locktime,
+                                interest: interest >= 0 ? Number((interest * 0.00000001).toFixed(8)) : 0,
+                                interestSats: interest >= 0 ? interest : 0,
+                                timeElapsedFromLocktimeInSeconds: decodedTx.format.locktime ? _locktimeSec : 0,
+                                timeTill1MonthInterestStopsInSeconds: decodedTx.format.locktime ? (UTXO_1MONTH_THRESHOLD_SECONDS - _locktimeSec > 0 ? UTXO_1MONTH_THRESHOLD_SECONDS - _locktimeSec : 0) : 0,
+                                interestRulesCheckPass: !decodedTx.format.locktime || Number(decodedTx.format.locktime) === 0 || _locktimeSec > UTXO_1MONTH_THRESHOLD_SECONDS || _utxoItem.value < 1000000000 ? false : true,
+                                confirmations: Number(_utxoItem.height) === 0 ? 0 : currentHeight - _utxoItem.height,
+                                height: _utxoItem.height,
+                                currentHeight,
+                                spendable: true,
+                                verified: false,
+                              };
 
-                                  _resolveObj.verified = verifyMerkleRes;
-                                  resolve(_resolveObj);
-                                });
-                              } else {
+                              if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                                _resolveObj.dpowSecured = nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
+                                _resolveObj.verified = true;
                                 resolve(_resolveObj);
+                              } else {
+                                if (api.electrumCache[network] &&
+                                    api.electrumCache[network].verboseTx &&
+                                    api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
+                                    api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
+                                  if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
+                                    _resolveObj.dpowSecured = true;
+                                  } else {
+                                    _resolveObj.dpowSecured = false;
+                                  }
+                                }
+
+                                // merkle root verification against another electrum server
+                                if (verify) {
+                                  api.verifyMerkleByCoin(
+                                    api.findCoinName(network),
+                                    _utxoItem.tx_hash,
+                                    _utxoItem.height
+                                  )
+                                  .then((verifyMerkleRes) => {
+                                    if (verifyMerkleRes &&
+                                        verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
+                                      verifyMerkleRes = false;
+                                    }
+
+                                    _resolveObj.verified = verifyMerkleRes;
+                                    resolve(_resolveObj);
+                                  });
+                                } else {
+                                  resolve(_resolveObj);
+                                }
+                              }
+                            } else {
+                              let _resolveObj = {
+                                txid: _utxoItem.tx_hash,
+                                vout: _utxoItem.tx_pos,
+                                address,
+                                amount: Number(_utxoItem.value) * 0.00000001,
+                                amountSats: _utxoItem.value,
+                                confirmations: Number(_utxoItem.height) === 0 ? 0 : currentHeight - _utxoItem.height,
+                                height: _utxoItem.height,
+                                currentHeight,
+                                spendable: true,
+                                verified: false,
+                              };
+
+                              if (api.electrum.coinData[network.toLowerCase()].nspv) {
+                                _resolveObj.dpowSecured = nspvGetinfo.notarization && Number(nspvGetinfo.notarization.notarized_height) >= Number(_utxoItem.height) ? true : false,
+                                _resolveObj.verified = true;
+                                resolve(_resolveObj);
+                              } else {
+                                if (api.electrumCache[network] &&
+                                    api.electrumCache[network].verboseTx &&
+                                    api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
+                                    api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
+                                  if (api.electrumCache[network].verboseTx[_utxoItem.tx_hash].confirmations >= 2) {
+                                    _resolveObj.dpowSecured = true;
+                                  } else {
+                                    _resolveObj.dpowSecured = false;
+                                  }
+                                }
+
+                                // merkle root verification against another electrum server
+                                if (verify) {
+                                  api.verifyMerkleByCoin(
+                                    api.findCoinName(network),
+                                    _utxoItem.tx_hash,
+                                    _utxoItem.height
+                                  )
+                                  .then((verifyMerkleRes) => {
+                                    if (verifyMerkleRes &&
+                                        verifyMerkleRes === api.CONNECTION_ERROR_OR_INCOMPLETE_DATA) {
+                                      verifyMerkleRes = false;
+                                    }
+
+                                    _resolveObj.verified = verifyMerkleRes;
+                                    resolve(_resolveObj);
+                                  });
+                                } else {
+                                  resolve(_resolveObj);
+                                }
                               }
                             }
                           }
-                        }
+                        });
                       });
                     });
                   }))
@@ -244,7 +290,7 @@ module.exports = (api) => {
   api.get('/electrum/listunspent', (req, res, next) => {
     async function _getListunspent() {
       const network = req.query.network || api.validateChainTicker(req.query.coin);
-      const ecl = api.electrum.coinData[network.toLowerCase()].nspv ? {} : await api.ecl(network);
+      const ecl = api.electrum.coinData[network.toLowerCase()] && api.electrum.coinData[network.toLowerCase()].nspv ? {} : await api.ecl(network);
 
       if (req.query.full &&
           req.query.full === 'true') {

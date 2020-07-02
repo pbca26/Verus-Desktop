@@ -444,11 +444,9 @@ module.exports = (api) => {
                     } else {
                       async function _pushtx() {
                         if (api.electrum.coinData[network.toLowerCase()].nspv) {
-                          api.nspvRequest(
-                            network.toLowerCase(),
-                            'broadcast',
-                            [_rawtx],
-                          )
+                          const nspvWrapper = api.nspvWrapper(network.toLowerCase());
+
+                          nspvWrapper.blockchainTransactionBroadcast(_rawtx, true)
                           .then((nspvBroadcast) => {
                             let _rawObj = {
                               utxoSet: inputs,
@@ -619,50 +617,96 @@ module.exports = (api) => {
   };
 
   api.post('/electrum/pushtx', (req, res, next) => {
-    // TODO: nspv
     if (api.checkToken(req.body.token)) {
       async function _pushtx() {
         const rawtx = req.body.rawtx;
         const _network = req.body.network;
-        const ecl = await api.ecl(_network);
+        let ecl;
+        
+        if (api.electrum.coinData[_network.toLowerCase()].nspv) {
+          ecl = api.nspvWrapper(_network.toLowerCase());
+        } else {
+          ecl = await api.ecl(_network);
+        }
 
         ecl.blockchainTransactionBroadcast(rawtx)
         .then((json) => {
-          api.log('electrum pushtx ==>', 'spv.pushtx');
-          api.log(json, 'spv.pushtx');
+          if (api.electrum.coinData[_network.toLowerCase()].nspv) {
+            api.log('nspv pushtx ==>', 'nspv.pushtx');
+            api.log(json, 'nspv.pushtx');
 
-          if (json &&
-              JSON.stringify(json).indexOf('fee not met') > -1) {
             const retObj = {
-              msg: 'error',
-              result: 'Missing fee',
-            };
-
-            res.end(JSON.stringify(retObj));
-          } else if (
-            json &&
-            JSON.stringify(json).indexOf('the transaction was rejected by network rules') > -1
-          ) {
-            const retObj = {
-              msg: 'error',
+              msg: 'success',
               result: json,
             };
-            res.end(JSON.stringify(retObj));
-          } else if (
-            json &&
-            json.indexOf('bad-txns-inputs-spent') > -1
-          ) {
-            const retObj = {
-              msg: 'error',
-              result: 'Bad transaction inputs spent',
-            };
 
             res.end(JSON.stringify(retObj));
-          } else if (
-            json &&
-            json.length === 64
-          ) {
-            if (json.indexOf('bad-txns-in-belowout') > -1) {
+          } else {
+            ecl.close();
+            api.log('electrum pushtx ==>', 'spv.pushtx');
+            api.log(json, 'spv.pushtx');
+
+            if (json &&
+                JSON.stringify(json).indexOf('fee not met') > -1) {
+              const retObj = {
+                msg: 'error',
+                result: 'Missing fee',
+              };
+
+              res.end(JSON.stringify(retObj));
+            } else if (
+              json &&
+              JSON.stringify(json).indexOf('the transaction was rejected by network rules') > -1
+            ) {
+              const retObj = {
+                msg: 'error',
+                result: json,
+              };
+              res.end(JSON.stringify(retObj));
+            } else if (
+              json &&
+              json.indexOf('bad-txns-inputs-spent') > -1
+            ) {
+              const retObj = {
+                msg: 'error',
+                result: 'Bad transaction inputs spent',
+              };
+
+              res.end(JSON.stringify(retObj));
+            } else if (
+              json &&
+              json.length === 64
+            ) {
+              if (json.indexOf('bad-txns-in-belowout') > -1) {
+                const retObj = {
+                  msg: 'error',
+                  result: 'Bad transaction inputs spent',
+                };
+
+                res.end(JSON.stringify(retObj));
+              } else {
+                if (req.query.pub) {
+                  api.updatePendingTxCache(
+                    network,
+                    txid,
+                    {
+                      pub: req.query.pub,
+                      rawtx: _rawtx,
+                    },
+                  );
+                }
+
+                const retObj = {
+                  msg: 'success',
+                  result: json,
+                };
+
+                res.end(JSON.stringify(retObj));
+              }
+            } else if (
+              json &&
+              json.indexOf('bad-txns-in-belowout') > -1
+            ) {
               const retObj = {
                 msg: 'error',
                 result: 'Bad transaction inputs spent',
@@ -670,41 +714,13 @@ module.exports = (api) => {
 
               res.end(JSON.stringify(retObj));
             } else {
-              if (req.query.pub) {
-                api.updatePendingTxCache(
-                  network,
-                  txid,
-                  {
-                    pub: req.query.pub,
-                    rawtx: _rawtx,
-                  },
-                );
-              }
-
               const retObj = {
-                msg: 'success',
-                result: json,
+                msg: 'error',
+                result: 'Can\'t broadcast transaction',
               };
 
               res.end(JSON.stringify(retObj));
             }
-          } else if (
-            json &&
-            json.indexOf('bad-txns-in-belowout') > -1
-          ) {
-            const retObj = {
-              msg: 'error',
-              result: 'Bad transaction inputs spent',
-            };
-
-            res.end(JSON.stringify(retObj));
-          } else {
-            const retObj = {
-              msg: 'error',
-              result: 'Can\'t broadcast transaction',
-            };
-
-            res.end(JSON.stringify(retObj));
           }
         });
       };
