@@ -169,8 +169,6 @@ module.exports = (api) => {
                       });
                     }))
                     .then(() => {
-                      ecl.close();
-
                       resolve({
                         confirmed: Number((0.00000001 * json.confirmed).toFixed(8)),
                         unconfirmed: Number((0.00000001 * json.unconfirmed).toFixed(8)),

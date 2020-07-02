@@ -642,7 +642,6 @@ module.exports = (api) => {
 
             res.end(JSON.stringify(retObj));
           } else {
-            ecl.close();
             api.log('electrum pushtx ==>', 'spv.pushtx');
             api.log(json, 'spv.pushtx');
 
