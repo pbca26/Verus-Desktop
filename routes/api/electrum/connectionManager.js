@@ -122,7 +122,7 @@ module.exports = (api) => {
           if (pingSecPassed > PING_TIME) {
             api.log(`ecl ${coin} ${serverStr} ping limit passed, send ping`, 'ecl.manager');
 
-            getProtocolVersion(electrumServers[coin][serverStr].server)
+            getProtocolVersion(electrumServers[coin][serverStr].server, api)
             .then((eclProtocolVersion) => {
               if (eclProtocolVersion === 'sent') {
                 api.log(`ecl ${coin} ${serverStr} ping success`, 'ecl.manager');
