@@ -1,7 +1,8 @@
 const fs = require('fs-extra');
 const _fs = require('graceful-fs');
 const fsnode = require('fs');
-const { ALLOWED_PATHS_ARR } = require('../utils/constants/index')
+const { ALLOWED_PATHS_ARR } = require('../utils/constants/index');
+const appInfo = require('../appInfo');
 
 module.exports = (api) => {
   api.handleFileProblem = (desc, throwError) => {
@@ -106,7 +107,9 @@ module.exports = (api) => {
     }
   };
 
-  api = require('./currency_data')(api)
+  api = require('./currencyData')(api)
   api = require('./nameCommitments')(api)
+  api = require('./backup')(api)
+  api = require('./updateLog')(api)
   return api;
 };

@@ -10,14 +10,20 @@ const pathsAgama = (api) => {
       fixPath();
       //api.agamaDirKMD = `${process.env.HOME}/Library/Application Support/Agama`;
 
-      api.agamaDir = `${process.env.HOME}/Library/Application Support/Verus-Desktop`;
+      api.VerusDesktopDir = `${process.env.HOME}/Library/Application Support/Verus-Desktop`;
+
+      api.agamaDir = `${process.env.HOME}/Library/Application Support/Verus-Desktop/appdata`;
+      api.backupDir = `${process.env.HOME}/Library/Application Support/Verus-Desktop/backups`;
       return api;
       break;
 
     case 'linux':
       //api.agamaDirKMD = `${process.env.HOME}/.agama`;
 
-      api.agamaDir = `${process.env.HOME}/.verus-desktop`;
+      api.VerusDesktopDir = `${process.env.HOME}/.verus-desktop`;
+
+      api.agamaDir = `${process.env.HOME}/.verus-desktop/appdata`;
+      api.backupDir = `${process.env.HOME}/.verus-desktop/backups`;
       return api;
       break;
 
@@ -25,8 +31,14 @@ const pathsAgama = (api) => {
       //api.agamaDirKMD = `${process.env.APPDATA}/Agama`;
       //api.agamaDirKMD = path.normalize(api.agamaDirKMD);
 
-      api.agamaDir = `${process.env.APPDATA}/Verus-Desktop`;
+      api.VerusDesktopDir = `${process.env.APPDATA}/Verus-Desktop`;
+      api.VerusDesktopDir = path.normalize(api.VerusDesktopDir);
+
+      api.agamaDir = `${process.env.APPDATA}/Verus-Desktop/appdata`;
       api.agamaDir = path.normalize(api.agamaDir);
+
+      api.backupDir = `${process.env.APPDATA}/Verus-Desktop/backups`;
+      api.backupDir = path.normalize(api.backupDir);
       return api;
       break;
   }

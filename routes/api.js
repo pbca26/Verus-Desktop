@@ -71,10 +71,10 @@ api.pathsAgama();
 api.pathsDaemons();
 
 // core
+api = require('./api/data_files/jsonFileManager')(api);
 api = require('./api/log.js')(api);
 api = require('./api/config.js')(api);
 api = require('./api/users.js')(api);
-api = require('./api/data_files/jsonFileManager')(api);
 api = require('./api/init.js')(api);
 
 api.createAgamaDirs();

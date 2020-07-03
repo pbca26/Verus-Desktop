@@ -47,7 +47,7 @@ module.exports = (api) => {
         const localMissing = flatDefault.filter(x => {return !flatLocal.includes(x)})
 
         if (localMissing.length > 0) {
-          api.log('The local is missing the following properties! Attempting to add them in now...', 'settings');
+          api.log('The local config is missing the following properties! Attempting to add them in now...', 'settings');
           api.log(localMissing, 'settings');
 
           localMissing.forEach(propertyGroup => {

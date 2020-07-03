@@ -8,8 +8,12 @@ const WHITELIST_DESC = "This file contains currencies you have chosen to whiteli
 
 const GRAYLIST_DESC = "This file contains a list of curated currencies that will appear in your wallet if they aren't blacklisted, and you have a balance above 0 of them."
 
+// Update Log
+const UPDATE_LOG_DESC = "This file contains a history of all version-required updates performed on data in the Verus Desktop folder."
+
 module.exports = {
   NAME_COMMITMENTS_DESC,
+  UPDATE_LOG_DESC,
   BLACKLIST_DESC,
   WHITELIST_DESC,
   GRAYLIST_DESC
