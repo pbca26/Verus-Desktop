@@ -76,7 +76,8 @@ const appConfig = {
         zcashParamsSrc: "z.cash",
         includeP2shAddrs: false,
         includeEmptyChangeAddrs: false,
-        nativeCacheMbLimit: 30
+        nativeCacheMbLimit: 30,
+        filterGenerateTransactions: true
         //TODO: Make update intervals configurable
       }
     },
@@ -177,7 +178,12 @@ const appConfig = {
           displayName: "Include Empty Change Addresses",
           info:
             "Include automatically generated change adresses in your address list, even if they're empty."
-        }
+        },
+        filterGenerateTransactions: {
+          type: 'checkbox',
+          displayName: 'Seperate mining/staking transactions',
+          info: 'Filter all mining/staking related transactions out of the main wallet tab, and only show them under the mining tab.',
+        },
       }
     },
     coin: {
