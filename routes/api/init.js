@@ -3,14 +3,6 @@ const path = require('path');
 let _foldersInitRan = false;
 
 module.exports = (api) => {
-  api.readVersionFile = () => {
-    // read app version
-    const rootLocation = path.join(__dirname, '../../');
-    const localVersionFile = fs.readFileSync(`${rootLocation}version`, 'utf8');
-
-    return localVersionFile;
-  }
-
   // Moves existing data to new directory
   api.updateDataFolderFormatv071 = () => {
     const oldDirs = [

@@ -32,6 +32,27 @@ ipcMain.on('staticVar', (event, arg) => {
 	event.sender.send('staticVar', !arg ? staticVar : staticVar[arg]);
 });
 
+let localVersion;
+const localVersionFile = fs.readFileSync(`${__dirname}/version`, 'utf8');
+		
+localVersion = localVersionFile.split(localVersionFile.indexOf('\r\n') > -1 ? '\r\n' : '\n');
+
+global.USB_HOME_DIR = path.resolve(__dirname, './usb_home')
+
+// USB Mode sets all necesarry files/folders to be in app parent directory
+global.USB_MODE =
+  localVersion[2] &&
+  localVersion[2].split("=")[1] &&
+  localVersion[2].split("=")[1] === "usb"
+    ? true
+    : false;
+
+global.HOME = global.USB_MODE
+    ? global.USB_HOME_DIR
+    : os.platform() === "win32"
+    ? process.env.APPDATA
+    : process.env.HOME;
+
 if (osPlatform === 'linux') {
 	process.env.ELECTRON_RUN_AS_NODE = true;
 }
@@ -47,19 +68,14 @@ const { appConfig } = api
 /*const nativeCoindList = api.scanNativeCoindBins(); // dex related
 api.setVar('nativeCoindList', nativeCoindList);*/
 
-let localVersion;
-let localVersionFile = api.readVersionFile();
-localVersion = localVersionFile.split(localVersionFile.indexOf('\r\n') > -1 ? '\r\n' : '\n');
-
 const appBasicInfo = {
 	name: 'Verus Desktop',
+	mode: global.USB_MODE ? 'usb' : 'standard',
 	version: localVersion[0],
 };
 
 app.setName(appBasicInfo.name);
 app.setVersion(appBasicInfo.version);
-
-api.createAgamaDirs();
 
 // parse argv
 let _argv = {};
@@ -87,6 +103,7 @@ for (let i = 0; i < process.argv.length; i++) {
 const appSessionHash = _argv.token ? _argv.token : randomBytes(32).toString('hex');
 const _spvFees = api.getSpvFees();
 
+api.writeLog('usb mode: ' + global.USB_MODE, 'init');
 api.writeLog(`app info: ${appBasicInfo.name} ${appBasicInfo.version}`);
 api.writeLog('sys info:');
 api.writeLog(`totalmem_readable: ${formatBytes(os.totalmem())}`);
@@ -102,6 +119,7 @@ if (process.argv.indexOf('devmode') > -1 ||
 	api.log(`app init ${appSessionHash}`, 'init');
 }
 
+api.log('usb mode: ' + global.USB_MODE, 'init');
 api.log(`app info: ${appBasicInfo.name} ${appBasicInfo.version}`, 'init');
 api.log('sys info:', 'init');
 api.log(`totalmem_readable: ${formatBytes(os.totalmem())}`, 'init');
