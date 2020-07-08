@@ -33,10 +33,12 @@ jobs:
     - name: Install Electron build tools
       run: npm install -g electron-builder
 
-    - name: Fetch GUI
+    - name: Fetch and build GUI
       run: |
         cd gui
         git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
+        npm install
+        npm run build
         cd ../
 
     - name: Build
