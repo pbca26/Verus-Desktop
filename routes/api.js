@@ -185,6 +185,9 @@ api = require('./api/addressBook.js')(api);
 api = require('./api/dice.js')(api);
 api = require('./api/system.js')(api);
 
+// Utility APIs
+api = require('./api/utility_apis/csvExport.js')(api);
+
 // elections
 api = require('./api/elections.js')(api);
 
