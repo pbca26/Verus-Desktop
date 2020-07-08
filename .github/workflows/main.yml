@@ -33,13 +33,17 @@ jobs:
     - name: Install Electron build tools
       run: npm install -g electron-builder
 
+    - name: Install Yarn
+      run: npm install -g yarn
+
     - name: Fetch and build GUI
       run: |
         cd gui
         git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
-        npm install
-        npm run build
-        cd ../
+        cd Verus-Desktop-GUI/react
+        yarn install --network-timeout 1000000
+        yarn run build
+        cd ../../../
 
     - name: Build
       run: |
