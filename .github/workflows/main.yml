@@ -18,7 +18,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v1
       with:
         node-version: '12'
         check-latest: true
@@ -28,8 +28,7 @@ jobs:
         ./fetch-nspv-bins.sh
 
     - name: Install deps
-    - run: |
-      npm install
+      run: npm install
 
     - name: Upload verus-desktop-osx.tar.gz as artifact
       uses: actions/upload-artifact@v1
