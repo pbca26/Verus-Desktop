@@ -1,0 +1,32 @@
+name: VerusDesktopCI
+
+on: 
+  pull_request:
+    types: [opened, reopened]
+  push:
+    branches-ignore:
+      - master
+    paths-ignore:
+      - ./README.md
+    tags-ignore:
+      - '*.noci'
+
+jobs:
+  job-macos-build:
+    name: Build (MacOS)
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v2
+      with:
+        node-version: '12'
+        check-latest: true
+
+    - name: Fetch NSPV binaries
+      run: |
+        ./fetch-nspv-bins.sh
+
+    - name: Install deps
+    - run: |
+      npm install
