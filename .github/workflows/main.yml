@@ -30,6 +30,14 @@ jobs:
     - name: Install deps
       run: npm install
 
+    - name: Install Electron build tools
+      run: npm install -g electron-builder
+
+    - name: Build
+      run: |
+        npm run dist
+        tar -czvf verus-desktop-osx.tar.gz dist
+
     - name: Upload verus-desktop-osx.tar.gz as artifact
       uses: actions/upload-artifact@v1
       with:
