@@ -55,3 +55,91 @@ jobs:
       with:
         name: verus-desktop-osx
         path: ./verus-desktop-osx.tar.gz
+
+  job-linux-build:
+    name: Build (Linux)
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+        check-latest: true
+
+    - name: Fetch NSPV binaries
+      run: |
+        ./fetch-nspv-bins.sh
+
+    - name: Install deps
+      run: npm install
+
+    - name: Install Electron build tools
+      run: npm install -g electron-builder
+
+    - name: Install Yarn
+      run: npm install -g yarn
+
+    - name: Fetch and build GUI
+      run: |
+        cd gui
+        git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
+        cd Verus-Desktop-GUI/react
+        yarn install --network-timeout 1000000
+        yarn run build
+        cd ../../../
+
+    - name: Build
+      run: |
+        npm run dist
+        tar -czvf verus-desktop-linux.tar.gz dist
+
+    - name: Upload verus-desktop-linux.tar.gz as artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: verus-desktop-linux
+        path: ./verus-desktop-linux.tar.gz
+
+  job-win-build:
+    name: Build (Windows)
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+        check-latest: true
+
+    - name: Fetch NSPV binaries
+      run: |
+        ./fetch-nspv-bins.sh
+
+    - name: Install deps
+      run: npm install
+
+    - name: Install Electron build tools
+      run: npm install -g electron-builder
+
+    - name: Install Yarn
+      run: npm install -g yarn
+
+    - name: Fetch and build GUI
+      run: |
+        cd gui
+        git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
+        cd Verus-Desktop-GUI/react
+        yarn install --network-timeout 1000000
+        yarn run build
+        cd ../../../
+
+    - name: Build
+      run: |
+        npm run dist
+        tar -czvf verus-desktop-linux.tar.gz dist
+
+    - name: Upload verus-desktop-linux.tar.gz as artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: verus-desktop-linux
+        path: ./verus-desktop-linux.tar.gz
