@@ -12,12 +12,47 @@ on:
       - '*.noci'
 
 jobs:
-  job-macos-build:
-    name: Build (MacOS)
-    runs-on: macos-latest
+  job-linux-gui-build:
+    name: Build GUI (Linux)
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '12'
+        check-latest: true
+
+    - name: Install Yarn
+      run: npm install -g yarn
+
+    - name: Fetch and build GUI
+      run: |
+        cd gui
+        git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
+        cd Verus-Desktop-GUI/react
+        yarn install --network-timeout 1000000
+        yarn run build
+        tar -czvf gui.tar.gz build
+        mv gui.tar.gz ../../../
+
+    - name: Upload gui.tar.gz as artifact
+      uses: actions/upload-artifact@v1
+      with:
+        name: gui
+        path: ./gui.tar.gz
+
+  job-macos-build:
+    name: Build (MacOS)
+    runs-on: macos-latest
+    needs: job-linux-gui-build
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Download pre-built GUI
+      uses: actions/download-artifact@v1
+      with:
+        name: gui
     - uses: actions/setup-node@v1
       with:
         node-version: '12'
@@ -33,16 +68,14 @@ jobs:
     - name: Install Electron build tools
       run: npm install -g electron-builder
 
-    - name: Install Yarn
-      run: npm install -g yarn
-
-    - name: Fetch and build GUI
+    - name: Unpack GUI
       run: |
         cd gui
         git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
-        cd Verus-Desktop-GUI/react
-        yarn install --network-timeout 1000000
-        yarn run build
+        cd ../
+        mv gui/gui.tar.gz gui/Verus-Desktop-GUI/react
+        cd gui/Verus-Desktop-GUI/react
+        tar xzvf gui.tar.gz
         cd ../../../
 
     - name: Build
@@ -59,9 +92,14 @@ jobs:
   job-linux-build:
     name: Build (Linux)
     runs-on: ubuntu-latest
+    needs: job-linux-gui-build
 
     steps:
     - uses: actions/checkout@v1
+    - name: Download pre-built GUI
+      uses: actions/download-artifact@v1
+      with:
+        name: gui
     - uses: actions/setup-node@v1
       with:
         node-version: '12'
@@ -77,16 +115,14 @@ jobs:
     - name: Install Electron build tools
       run: npm install -g electron-builder
 
-    - name: Install Yarn
-      run: npm install -g yarn
-
-    - name: Fetch and build GUI
+    - name: Unpack GUI
       run: |
         cd gui
         git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
-        cd Verus-Desktop-GUI/react
-        yarn install --network-timeout 1000000
-        yarn run build
+        cd ../
+        mv gui/gui.tar.gz gui/Verus-Desktop-GUI/react
+        cd gui/Verus-Desktop-GUI/react
+        tar xzvf gui.tar.gz
         cd ../../../
 
     - name: Build
@@ -103,9 +139,14 @@ jobs:
   job-win-build:
     name: Build (Windows)
     runs-on: windows-latest
+    needs: job-linux-gui-build
 
     steps:
     - uses: actions/checkout@v1
+    - name: Download pre-built GUI
+      uses: actions/download-artifact@v1
+      with:
+        name: gui
     - uses: actions/setup-node@v1
       with:
         node-version: '12'
@@ -113,7 +154,13 @@ jobs:
 
     - name: Fetch NSPV binaries
       run: |
-        ./fetch-nspv-bins.sh
+        mkdir assets/bin/win64
+        cd assets/bin/win64
+        curl -L -o nspv-win.tar https://github.com/pbca26/libnspv/releases/download/v0.3/nspv-win.tar
+        dir
+        tar xzvf nspv-win.tar
+        del nspv-win.tar
+        cd ../../../
 
     - name: Install deps
       run: npm install
@@ -121,25 +168,23 @@ jobs:
     - name: Install Electron build tools
       run: npm install -g electron-builder
 
-    - name: Install Yarn
-      run: npm install -g yarn
-
-    - name: Fetch and build GUI
+    - name: Unpack GUI
       run: |
         cd gui
         git clone https://github.com/pbca26/Verus-Desktop-GUI -b dev
-        cd Verus-Desktop-GUI/react
-        yarn install --network-timeout 1000000
-        yarn run build
+        cd ../
+        mv gui/gui.tar.gz gui/Verus-Desktop-GUI/react
+        cd gui/Verus-Desktop-GUI/react
+        tar xzvf gui.tar.gz
         cd ../../../
 
     - name: Build
       run: |
-        npm run dist
-        tar -czvf verus-desktop-linux.tar.gz dist
+        npm run dist-win
+        tar -czvf verus-desktop-win.tar.gz dist
 
-    - name: Upload verus-desktop-linux.tar.gz as artifact
+    - name: Upload verus-desktop-win.tar.gz as artifact
       uses: actions/upload-artifact@v1
       with:
-        name: verus-desktop-linux
-        path: ./verus-desktop-linux.tar.gz
+        name: verus-desktop-win
+        path: ./verus-desktop-win.tar.gz
