@@ -134,7 +134,15 @@ module.exports = (api) => {
               throw new Error("Preconvert expired! You can no longer preconvert this currency.")
             }
 
-            price = toCurrency.conversions[fromCurrencyIndex]
+            price =
+              toCurrency.bestcurrencystate != null &&
+              toCurrency.bestcurrencystate.currencies[
+                fromCurrency.currencyid
+              ] != null
+                ? toCurrency.bestcurrencystate.currencies[
+                    fromCurrency.currencyid
+                  ].lastconversionprice
+                : 0;
           }
         } catch (e) {
           api.log("Error while trying to fetch currencies for sendcurrency!", "send")
@@ -158,8 +166,6 @@ module.exports = (api) => {
             mintnew
           }]
         ];
-
-        let sendCurrencyTest
 
         // Extract reserve transfer outputs
         try {
