@@ -206,7 +206,7 @@ jobs:
       - name: Download Artifacts (MacOS)
         uses: actions/download-artifact@v1
         with:
-          name: verus-desktop-macos
+          name: verus-desktop-osx
       - name: Prepare Archives
         run: |
           mv verus-desktop-linux/verus-desktop-linux.tar.gz .
