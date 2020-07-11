@@ -39,13 +39,14 @@ localVersion = localVersionFile.split(localVersionFile.indexOf('\r\n') > -1 ? '\
 
 global.USB_HOME_DIR = path.resolve(__dirname, './usb_home')
 
+// TODO: Implement in a way less likely to confuse people
 // USB Mode sets all necesarry files/folders to be in app parent directory
-global.USB_MODE =
-  localVersion[2] &&
+global.USB_MODE = false
+  /*localVersion[2] &&
   localVersion[2].split("=")[1] &&
   localVersion[2].split("=")[1] === "usb"
     ? true
-    : false;
+    : false;*/
 
 global.HOME = global.USB_MODE
     ? global.USB_HOME_DIR
