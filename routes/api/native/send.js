@@ -59,6 +59,7 @@ module.exports = (api) => {
     let txParams
     let warnings = []
     let price
+    let conversionValue
     let fromCurrency
     let toCurrency
     let mint = false
@@ -121,28 +122,34 @@ module.exports = (api) => {
           );
           
           if (convertto != null && convertto !== currency) {
-            toCurrency = await api.native.get_currency(chainTicker, api.appSessionHash, convertto)
-            let fromCurrencyIndex = toCurrency.currencies.findIndex((value) => value === fromCurrency.currencyid)
-
-            if (fromCurrencyIndex === -1) {
-              throw new Error('"' + fromCurrency.name + '" currency is not a valid conversion for currency ""' + toCurrency.name + '"')
-            }
-            
+            toCurrency = await api.native.get_currency(chainTicker, api.appSessionHash, convertto)            
             currentHeight = await api.native.get_info(chainTicker, api.appSessionHash).longestchain
 
             if (currentHeight < toCurrency.startblock && !preconvert) {
               throw new Error("Preconvert expired! You can no longer preconvert this currency.")
             }
 
-            price =
+            if (
               toCurrency.bestcurrencystate != null &&
               toCurrency.bestcurrencystate.currencies[
                 fromCurrency.currencyid
               ] != null
-                ? toCurrency.bestcurrencystate.currencies[
-                    fromCurrency.currencyid
-                  ].lastconversionprice
-                : 0;
+            ) {
+              price = toCurrency.bestcurrencystate.currencies[fromCurrency.currencyid].lastconversionprice;
+              conversionValue = 1 / (spendAmount * price)
+            } else if (
+              fromCurrency.bestcurrencystate != null &&
+              fromCurrency.bestcurrencystate.currencies[
+                toCurrency.currencyid
+              ] != null
+            ) {
+              price = 1 / fromCurrency.bestcurrencystate.currencies[toCurrency.currencyid].lastconversionprice;
+              conversionValue = spendAmount * (1 / price)
+            } else {
+              throw new Error(
+                `Conversion between ${toCurrency.name} and ${fromCurrency.name} is not possible.`
+              );
+            }
           }
         } catch (e) {
           api.log("Error while trying to fetch currencies for sendcurrency!", "send")
@@ -264,6 +271,7 @@ module.exports = (api) => {
         remainingBalance,
         warnings,
         price,
+        conversionValue,
         fromCurrency,
         toCurrency,
         mint
