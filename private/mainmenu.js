@@ -140,7 +140,7 @@ const template = [
           shell.openItem(pathsDaemons().komodocliDir);
         }
       },
-      {
+      /*{
         label: global.USB_MODE ? 'Disable USB Mode' : 'Enable USB Mode',
         click (item, focusedWindow) {
           const verusIcon = path.join(__dirname, '../assets/icons/vrsc_256x256x32.png');
@@ -174,7 +174,7 @@ const template = [
             });
           }
         }
-      },
+      }*/,
     ]
   }
 ];
