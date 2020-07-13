@@ -1,13 +1,13 @@
 const Promise = require('bluebird');
 const request = require('request');
-const nspvPorts = require('./nspvPorts');
+// TODO: read ports from coins file
 const { toSats } = require('agama-wallet-lib/src/utils');
 
 module.exports = (api) => {
   api.nspvRequest = (coin, method, params) => {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `http://localhost:${nspvPorts[coin.toUpperCase()]}/`,
+        url: `http://localhost:${api.nspvPorts[coin.toUpperCase()]}/`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

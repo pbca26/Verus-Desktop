@@ -104,6 +104,33 @@ module.exports = (api) => {
     } else {
       api.log('NSPV coins file is matching', 'init');
     }
+
+    api.parseNSPVports();
+  };
+
+  api.parseNSPVports = () => {
+    const rootLocation = path.join(__dirname, '../../');
+    const nspvCoinsAgamaDirExists = fs.existsSync(`${api.agamaDir}/coins`);
+    let nspvPorts = {};
+    
+    if (nspvCoinsAgamaDirExists) {
+      const nspvCoinsContent = fs.readFileSync(`${api.agamaDir}/coins`, 'utf8');
+
+      try {
+        const nspvCoinsContentJSON = JSON.parse(nspvCoinsContent);
+
+        for (let item of nspvCoinsContentJSON) {
+          nspvPorts[item.coin] = item.rpcport;
+        }
+        api.log(`NSPV coins file ${nspvCoinsContentJSON.length} supported coins`, 'init');
+      } catch (e) {
+        api.log('NSPV coins file unable to parse!', 'init');
+      }
+    } else {
+      api.log('NSPV coins file doesn\'t exist!', 'init');
+    }
+
+    api.nspvPorts = nspvPorts;
   };
 
   return api;
