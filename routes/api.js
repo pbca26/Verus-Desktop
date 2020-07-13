@@ -58,6 +58,8 @@ const {
 api.electrumServers = electrumServers;
 api.electrumServersFlag = electrumServersFlag;
 api.electrumServersV1_4 = {};
+api.nspvProcesses = {};
+api.nspvPorts = {};
 
 api.CONNECTION_ERROR_OR_INCOMPLETE_DATA = 'connection error or incomplete data';
 
@@ -73,7 +75,7 @@ api.pathsDaemons();
 api = require('./api/log.js')(api);
 api = require('./api/config.js')(api);
 api = require('./api/users.js')(api);
-api = require('./api/nameCommitments.js')(api);
+api = require('./api/data_files/jsonFileManager')(api);
 api = require('./api/init.js')(api);
 
 api.createAgamaDirs();
@@ -123,8 +125,15 @@ api = require('./api/electrum/csv.js')(api);
 api = require('./api/electrum/utils.js')(api);
 api = require('./api/electrum/remove')(api);
 api = require('./api/electrum/send.js')(api);
+api = require('./api/electrum/connectionManager.js')(api);
 
-//native
+// init electrum connection manager loop
+api.initElectrumManager();
+
+// nspv
+api = require('./api/electrum/nspv.js')(api);
+
+// native
 api = require('./api/native/addrBalance.js')(api);
 api = require('./api/native/coins')(api);
 api = require('./api/native/callDaemon')(api);
@@ -142,6 +151,8 @@ api = require('./api/native/nameRegistration.js')(api);
 api = require('./api/native/idRegistration.js')(api);
 api = require('./api/native/idRevocation.js')(api);
 api = require('./api/native/idInformation.js')(api);
+api = require('./api/native/getCurrency.js')(api);
+api = require('./api/native/currencyGraylist.js')(api);
 api = require('./api/native/idRecovery.js')(api);
 api = require('./api/native/signdata.js')(api);
 api = require('./api/native/verifydata.js')(api);

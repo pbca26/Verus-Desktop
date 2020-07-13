@@ -1,4 +1,6 @@
 const { getRandomIntInclusive } = require('agama-wallet-lib/src/utils');
+const fs = require('fs-extra');
+const { spawn } = require('child_process');
 
 module.exports = (api) => {
   api.findCoinName = (network) => {
@@ -9,25 +11,63 @@ module.exports = (api) => {
     }
   }
 
-  api.addElectrumCoin = (coin) => {
+  api.addElectrumCoin = async(coin, enableNspv) => {
     coin = coin.toLowerCase();
     const servers = api.electrumServers[coin].serverList;
     // select random server
     let randomServer;
 
-    // pick a random server to communicate with
-    if (servers &&
-        servers.length > 0) {
-      const _randomServerId = getRandomIntInclusive(0, servers.length - 1);
-      const _randomServer = servers[_randomServerId];
-      const _serverDetails = _randomServer.split(':');
+    if (enableNspv &&
+        api.nspvPorts[coin.toUpperCase()]) {
+      api.log(`start ${coin.toUpperCase()} in NSPV at port ${api.nspvPorts[coin.toUpperCase()]}`, 'spv.coin');
+      
+      const nspv = spawn(
+        `${api.komodocliDir}/nspv`,
+        coin.toUpperCase() === 'KMD' ? [] : [coin.toUpperCase()],
+        {
+          cwd: api.agamaDir,
+        }, []
+      );
 
-      if (_serverDetails.length === 3) {
-        randomServer = {
-          ip: _serverDetails[0],
-          port: _serverDetails[1],
-          proto: _serverDetails[2],
-        };
+      nspv.stdout.on('data', (data) => {
+        api.log(`stdout: ${data}`, 'NSPV');
+      });
+      
+      nspv.stderr.on('data', (data) => {
+        api.log(`stderr: ${data}`, 'NSPV');
+      });
+      
+      nspv.on('close', (code) => {
+        api.log(`child process exited with code ${code}`, 'NSPV');
+      });
+
+      randomServer = {
+        ip: 'localhost',
+        port: api.nspvPorts[coin.toUpperCase()],
+        proto: 'http',
+      };
+      api.electrumServers[coin].serverList = 'none';
+      api.nspvProcesses[coin] = {
+        process: nspv,
+        pid: nspv.pid,
+      };
+      
+      api.log(`${coin.toUpperCase()} NSPV daemon PID ${nspv.pid}`, 'spv.coin');      
+    } else {
+      // pick a random server to communicate with
+      if (servers &&
+          servers.length > 0) {
+        const _randomServerId = getRandomIntInclusive(0, servers.length - 1);
+        const _randomServer = servers[_randomServerId];
+        const _serverDetails = _randomServer.split(':');
+
+        if (_serverDetails.length === 3) {
+          randomServer = {
+            ip: _serverDetails[0],
+            port: _serverDetails[1],
+            proto: _serverDetails[2],
+          };
+        }
       }
     }
 
@@ -39,23 +79,32 @@ module.exports = (api) => {
         proto: randomServer.proto,
       },
       serverList: api.electrumServers[coin].serverList ? api.electrumServers[coin].serverList : 'none',
-      txfee: coin === 'btc' ? 'calculated' :api.electrumServers[coin].txfee,
+      txfee: coin === 'btc' ? 'calculated' : api.electrumServers[coin].txfee,
     };
 
+    if (enableNspv) {
+      api.electrum.coinData[coin].nspv = true;
+    } else {
+      // wait for spv connection to be established
+      const ecl = await api.ecl(coin);
+    }
+
     if (randomServer) {
-      api.log(`random ${coin} electrum server ${randomServer.ip + ':' + randomServer.port}`, 'spv.coin');
+      api.log(`random ${coin} electrum server ${randomServer.ip}:${randomServer.port}`, 'spv.coin');
     } else {
       api.log(`${coin} doesnt have any backup electrum servers`, 'spv.coin');
     }
 
     if (Object.keys(api.electrumKeys).length > 0) {
-      const _keys = api.wifToWif(api.electrumKeys[Object.keys(api.electrumKeys)[0]].priv, coin);
+      const _keys = api.wifToWif(
+        api.electrumKeys[Object.keys(api.electrumKeys)[0]].priv,
+        coin
+      );
 
       api.electrumKeys[coin] = {
         priv: _keys.priv,
         pub: _keys.pub,
       };
-
     } else if (api.seed) {
       api.auth(api.seed, true);
     }
@@ -85,9 +134,12 @@ module.exports = (api) => {
     }
   });*/
 
-  api.post('/electrum/coins/activate', (req, res, next) => {
+  api.post('/electrum/coins/activate', async(req, res, next) => {
     if (api.checkToken(req.body.token)) {
-      const result = api.addElectrumCoin(req.body.chainTicker);
+      const result = await api.addElectrumCoin(
+        req.body.chainTicker,
+        req.body.launchConfig.startupParams && req.body.launchConfig.startupParams.nspv
+      );
 
       const retObj = {
         msg: 'success',

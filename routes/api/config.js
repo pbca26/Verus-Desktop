@@ -98,13 +98,7 @@ module.exports = (api) => {
         }
       }
      
-      fs.writeFileSync(configFileName,
-                  JSON.stringify(appSettings)
-                  .replace(/,/g, ',\n') // format json in human readable form
-                  .replace(/":/g, '": ')
-                  .replace(/{/g, '{\n')
-                  .replace(/}/g, '\n}'), 'utf8');
-
+      fs.writeFileSync(configFileName, JSON.stringify(appSettings, null, 2), 'utf8');
       
       api.log('config.json write file is done', 'settings');
       api.log(`app config.json file is created successfully at: ${api.agamaDir}`, 'settings');
