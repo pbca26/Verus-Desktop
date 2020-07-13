@@ -177,10 +177,17 @@ module.exports = (api) => {
         // Extract reserve transfer outputs
         try {
           sendCurrencyTest = await api.native.testSendCurrency(chainTicker, txParams)
+
+          warnings.push({
+            field: "price",
+            message: 'All price estimations are based on the latest conversion price. The actual conversion result is calculated at the time of conversion and will most likely differ.'
+          });
         } catch(e) {
           if (e.message === 'Insufficient funds' && mint) {
             e.message = `Insufficient funds. To mint coins, ensure that the identity that created this currency (${fromAddress}) has at least a balance of 0.0002 ${chainTicker}.`
           } else {
+            api.log("Error while testing currency send!", "send")
+            api.log(e, "send")
             throw e
           }
         }
