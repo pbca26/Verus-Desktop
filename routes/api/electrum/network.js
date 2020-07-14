@@ -4,8 +4,13 @@ const semverCmp = require('semver-compare');
 const electrumMinVersionProtocolV1_4 = '1.9.0';
 
 module.exports = (api) => {
+  api.isKomodo = (network) => {
+    const net = network.toLowerCase()
+    return api.customKomodoNetworks[net] || isKomodoCoin(net)
+  }
+
   api.isZcash = (network) => {
-    if (isKomodoCoin(network)) {
+    if (api.isKomodo(network)) {
       network = 'kmd';
     }
 
@@ -41,8 +46,7 @@ module.exports = (api) => {
       coin = network.toUpperCase();
     }
 
-    if (isKomodoCoin(coin) ||
-        isKomodoCoin(coinUC)) {
+    if (api.isKomodo(coin)) {
       return api.electrumJSNetworks.kmd;
     } else {
       return api.electrumJSNetworks[network];

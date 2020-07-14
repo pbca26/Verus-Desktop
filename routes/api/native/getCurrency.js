@@ -5,7 +5,7 @@ module.exports = (api) => {
     return new Promise((resolve, reject) => {      
       api.native.callDaemon(chain, 'getcurrency', [name], token)
       .then((currency) => {
-        resolve(currency)
+        resolve({ ...currency, parent_name: chain })
       })
       .catch(err => {
         reject(err)

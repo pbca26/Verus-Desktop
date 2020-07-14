@@ -40,7 +40,9 @@ module.exports = (api) => {
 
           loadingState.totalBlocks = longestchain;
           loadingState.loadedBlocks =
-            loadingState.loadedBlocks == null
+            longestchain < 5000 && longestchain != 0
+              ? longestchain
+              : loadingState.loadedBlocks == null
               ? 5000
               : loadingState.loadedBlocks + 5000;
 
@@ -56,7 +58,11 @@ module.exports = (api) => {
           const blockDiff =
             loadingState.totalBlocks - loadingState.loadedBlocks;
           loadingState.status =
-            blockDiff < 5000 && blockDiff > 0 ? "ready" : "loading";
+            blockDiff < 5000 &&
+            (blockDiff > 0 ||
+              (blockDiff == 0 && loadingState.totalBlocks != 0 && loadingState.totalBlocks < 5000))
+              ? "ready"
+              : "loading";
 
           // Calculate time taken to get coins supply for 5000 blocks and set timeout to repeat next 5000 block
           // in that time if still loading(to avoid clogging up daemon)

@@ -3,12 +3,34 @@ const path = require('path');
 let _foldersInitRan = false;
 
 module.exports = (api) => {
-  api.readVersionFile = () => {
-    // read app version
-    const rootLocation = path.join(__dirname, '../../');
-    const localVersionFile = fs.readFileSync(`${rootLocation}version`, 'utf8');
+  // Moves existing data to new directory
+  api.updateDataFolderFormatv071 = () => {
+    const oldDirs = [
+      `shepherd`,
+      `config.json`,
+      `users.json`
+    ];
 
-    return localVersionFile;
+    oldDirs.forEach((dir) => {
+      if (fs.existsSync(`${api.VerusDesktopDir}/${dir}`)) {
+        try {
+          fs.copySync(`${api.VerusDesktopDir}/${dir}`, `${api.agamaDir}/${dir}`)
+
+          api.log(`copied ${api.VerusDesktopDir}/${dir} to ${api.agamaDir}/${dir}`, 'init');
+          api.writeLog(`copied ${api.VerusDesktopDir}/${dir} to ${api.agamaDir}/${dir}`);
+        } catch(e) {
+          api.log(`error copying ${api.VerusDesktopDir}/${dir} to ${api.agamaDir}/${dir}`, 'init');
+          api.writeLog(`error copying ${api.VerusDesktopDir}/${dir} to ${api.agamaDir}/${dir}`);
+        }
+      }
+    })
+  }
+
+  api.isOldDataFolderFormat = () => {    
+    return (
+      fs.existsSync(api.VerusDesktopDir) &&
+      !fs.existsSync(api.agamaDir)
+    ) 
   }
 
   api.createAgamaDirs = () => {
@@ -24,28 +46,42 @@ module.exports = (api) => {
         }
       });
 
-      //COPY OVER STUF FROM "COPY THIS OVER" MARKER
-      /*if (!fs.existsSync(api.agamaDir)) {
-        fs.mkdirSync(api.agamaDir);
+      if (!fs.existsSync(api.VerusDesktopDir)) {
+        fs.mkdirSync(api.VerusDesktopDir);
 
-        if (fs.existsSync(api.agamaDir)) {
-          api.log(`created agama folder at ${api.agamaDir}`, 'init');
-          api.writeLog(`created agama folder at ${api.agamaDir}`);
+        if (fs.existsSync(api.VerusDesktopDir)) {
+          api.log(`created verus desktop main folder at ${api.VerusDesktopDir}`, 'init');
+          api.writeLog(`created verus desktop main folder at ${api.VerusDesktopDir}`);
         }
       } else {
-        api.log('agama folder already exists', 'init');
-      }*/
+        api.log('verus desktop main folder already exists', 'init');
+      }
 
-      //COPY THIS OVER
-      if (!fs.existsSync(api.agamaDir)) {
-        fs.mkdirSync(api.agamaDir);
+      if (!fs.existsSync(api.agamaDir)) {  
+        if (api.isOldDataFolderFormat()) {
+          fs.mkdirSync(api.agamaDir);
+          api.updateDataFolderFormatv071()
+        } else {
+          fs.mkdirSync(api.agamaDir);
+        }
 
         if (fs.existsSync(api.agamaDir)) {
-          api.log(`created verus agama folder at ${api.agamaDir}`, 'init');
-          api.writeLog(`created verus agama folder at ${api.agamaDir}`);
+          api.log(`created verus desktop appdata folder at ${api.agamaDir}`, 'init');
+          api.writeLog(`created verus desktop appdata folder at ${api.agamaDir}`);
         }
       } else {
-        api.log('verus agama folder already exists', 'init');
+        api.log('verus desktop appdata folder already exists', 'init');
+      }
+
+      if (!fs.existsSync(api.backupDir)) {
+        fs.mkdirSync(api.backupDir);
+
+        if (fs.existsSync(api.backupDir)) {
+          api.log(`created verus desktop backup folder at ${api.agamaDir}`, 'init');
+          api.writeLog(`created verus desktop backup folder at ${api.agamaDir}`);
+        }
+      } else {
+        api.log('verus desktop backup folder already exists', 'init');
       }
 
       if (!fs.existsSync(`${api.agamaDir}/shepherd`)) {

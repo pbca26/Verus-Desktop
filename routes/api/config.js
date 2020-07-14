@@ -47,7 +47,7 @@ module.exports = (api) => {
         const localMissing = flatDefault.filter(x => {return !flatLocal.includes(x)})
 
         if (localMissing.length > 0) {
-          api.log('The local is missing the following properties! Attempting to add them in now...', 'settings');
+          api.log('The local config is missing the following properties! Attempting to add them in now...', 'settings');
           api.log(localMissing, 'settings');
 
           localMissing.forEach(propertyGroup => {
@@ -99,11 +99,7 @@ module.exports = (api) => {
       }
      
       fs.writeFileSync(configFileName,
-                  JSON.stringify(appSettings)
-                  .replace(/,/g, ',\n') // format json in human readable form
-                  .replace(/":/g, '": ')
-                  .replace(/{/g, '{\n')
-                  .replace(/}/g, '\n}'), 'utf8');
+                  JSON.stringify(appSettings), 'utf8');
 
       
       api.log('config.json write file is done', 'settings');
@@ -112,6 +108,7 @@ module.exports = (api) => {
     } catch (e) {
       api.log('error writing config', 'settings');
       api.log(e, 'settings');
+      throw e;
     }
   }
 
@@ -129,14 +126,20 @@ module.exports = (api) => {
 
         res.end(JSON.stringify(retObj));
       } else {
-        api.saveLocalAppConf(req.body.configObj);
+        try {
+          api.saveLocalAppConf(req.body.configObj);
+        } catch(e) {
+          res.end(JSON.stringify({
+            msg: 'error',
+            result: e.message,
+          }));
+          return
+        }
 
-        const retObj = {
+        res.end(JSON.stringify({
           msg: 'success',
           result: 'config saved',
-        };
-
-        res.end(JSON.stringify(retObj));
+        }));
       }
     } else {
       const retObj = {
