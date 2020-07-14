@@ -283,7 +283,8 @@ module.exports = (api) => {
                                       formattedTx.vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
                                       formattedTx.opreturn = opreturn;
 
-                                      if (api.electrumCache[network] &&
+                                      if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                          api.electrumCache[network] &&
                                           api.electrumCache[network].verboseTx &&
                                           api.electrumCache[network].verboseTx[transaction.tx_hash]) {
                                         formattedTx.dpowSecured = false;
@@ -322,7 +323,8 @@ module.exports = (api) => {
                                       formattedTx[1].vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
                                       formattedTx[1].opreturn = opreturn[1];
 
-                                      if (api.electrumCache[network] &&
+                                      if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                          api.electrumCache[network] &&
                                           api.electrumCache[network].verboseTx &&
                                           api.electrumCache[network].verboseTx[transaction.tx_hash]) {
                                         formattedTx[0].dpowSecured = false;
