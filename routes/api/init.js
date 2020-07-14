@@ -131,6 +131,10 @@ module.exports = (api) => {
     }
 
     api.nspvPorts = nspvPorts;
+    
+    // extend dpow coins list
+    const dpowCoins = Object.keys(nspvPorts);
+    api.dpowCoins = [...new Set([].concat(...[api.dpowCoins, dpowCoins]))];
   };
 
   return api;

@@ -60,6 +60,7 @@ api.electrumServersFlag = electrumServersFlag;
 api.electrumServersV1_4 = {};
 api.nspvProcesses = {};
 api.nspvPorts = {};
+api.dpowCoins = require('agama-wallet-lib/src/electrum-servers-dpow');
 
 api.CONNECTION_ERROR_OR_INCOMPLETE_DATA = 'connection error or incomplete data';
 
