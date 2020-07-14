@@ -136,7 +136,7 @@ module.exports = (api) => {
               ] != null
             ) {
               price = toCurrency.bestcurrencystate.currencies[fromCurrency.currencyid].lastconversionprice;
-              conversionValue = 1 / (spendAmount * price)
+              conversionValue = spendAmount * (1 / price)
             } else if (
               fromCurrency.bestcurrencystate != null &&
               fromCurrency.bestcurrencystate.currencies[
