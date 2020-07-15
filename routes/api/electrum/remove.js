@@ -10,7 +10,7 @@ module.exports = (api) => {
 
       delete api.electrum.coinData[_chain.toLowerCase()];
       
-      if (Object.keys(api.electrum.coinData).length - 1 === 0) {
+      if (Object.keys(api.electrum.coinData).length === 0) {
         api.electrumKeys = {};
       }
 
