@@ -1,13 +1,13 @@
 const Promise = require('bluebird');
 const request = require('request');
-const nspvPorts = require('./nspvPorts');
+// TODO: read ports from coins file
 const { toSats } = require('agama-wallet-lib/src/utils');
 
 module.exports = (api) => {
   api.nspvRequest = (coin, method, params) => {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `http://localhost:${nspvPorts[coin.toUpperCase()]}/`,
+        url: `http://localhost:${api.nspvPorts[coin.toUpperCase()]}/`,
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ module.exports = (api) => {
         if (api.electrum.coinData[key].nspv &&
             api.nspvProcesses[key].pid) {
           api.log(`NSPV daemon ${key.toUpperCase()} PID ${api.nspvProcesses[key].pid} is stopped`, 'spv.nspv.coin');
-          api.nspvProcesses[key].process.kill('SIGHUP');
+          api.nspvProcesses[key].process.kill('SIGINT');
           delete api.nspvProcesses[key];
         }
       }
@@ -53,7 +53,7 @@ module.exports = (api) => {
       if (api.electrum.coinData[coin].nspv &&
           api.nspvProcesses[coin].pid) {
         api.log(`NSPV daemon ${coin.toUpperCase()} PID ${api.nspvProcesses[coin].pid} is stopped`, 'spv.nspv.coin');
-        api.nspvProcesses[coin].process.kill('SIGHUP');
+        api.nspvProcesses[coin].process.kill('SIGINT');
         delete api.nspvProcesses[coin];
       }
     }

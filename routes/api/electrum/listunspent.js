@@ -166,7 +166,8 @@ module.exports = (api) => {
                                 _resolveObj.verified = true;
                                 resolve(_resolveObj);
                               } else {
-                                if (api.electrumCache[network] &&
+                                if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                    api.electrumCache[network] &&
                                     api.electrumCache[network].verboseTx &&
                                     api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
                                     api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {
@@ -216,7 +217,8 @@ module.exports = (api) => {
                                 _resolveObj.verified = true;
                                 resolve(_resolveObj);
                               } else {
-                                if (api.electrumCache[network] &&
+                                if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                    api.electrumCache[network] &&
                                     api.electrumCache[network].verboseTx &&
                                     api.electrumCache[network].verboseTx[_utxoItem.tx_hash] &&
                                     api.electrumCache[network].verboseTx[_utxoItem.tx_hash].hasOwnProperty('confirmations')) {

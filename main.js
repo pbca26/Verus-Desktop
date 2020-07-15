@@ -344,7 +344,7 @@ function createAppCloseWindow() {
 				// load our index.html (i.e. Agama GUI)
 				api.writeLog('show agama gui');
         const _assetChainPorts = require('./routes/ports.js');
-        const nspvPorts = require('./routes/api/electrum/nspvPorts');
+        const nspvPorts = api.nspvPorts;
 
 				staticVar.arch = localVersion[1].indexOf('-spv-only') > -1 ? 'spv-only' : arch();
 				staticVar.appBasicInfo = appBasicInfo;

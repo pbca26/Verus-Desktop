@@ -1,5 +1,4 @@
 const { getRandomIntInclusive } = require('agama-wallet-lib/src/utils');
-const nspvPorts = require('./nspvPorts');
 const fs = require('fs-extra');
 const { spawn } = require('child_process');
 
@@ -19,8 +18,8 @@ module.exports = (api) => {
     let randomServer;
 
     if (enableNspv &&
-        nspvPorts[coin.toUpperCase()]) {
-      api.log(`start ${coin.toUpperCase()} in NSPV at port ${nspvPorts[coin.toUpperCase()]}`, 'spv.coin');
+        api.nspvPorts[coin.toUpperCase()]) {
+      api.log(`start ${coin.toUpperCase()} in NSPV at port ${api.nspvPorts[coin.toUpperCase()]}`, 'spv.coin');
       
       const nspv = spawn(
         `${api.komodocliDir}/nspv`,
@@ -31,20 +30,20 @@ module.exports = (api) => {
       );
 
       nspv.stdout.on('data', (data) => {
-        console.log(`stdout: ${data}`);
+        api.log(`stdout: ${data}`, 'NSPV');
       });
       
       nspv.stderr.on('data', (data) => {
-        console.error(`stderr: ${data}`);
+        api.log(`stderr: ${data}`, 'NSPV');
       });
       
       nspv.on('close', (code) => {
-        console.log(`child process exited with code ${code}`);
+        api.log(`child process exited with code ${code}`, 'NSPV');
       });
 
       randomServer = {
         ip: 'localhost',
-        port: nspvPorts[coin.toUpperCase()],
+        port: api.nspvPorts[coin.toUpperCase()],
         proto: 'http',
       };
       api.electrumServers[coin].serverList = 'none';
