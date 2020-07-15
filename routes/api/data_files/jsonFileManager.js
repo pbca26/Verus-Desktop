@@ -1,35 +1,45 @@
 const fs = require('fs-extra');
 const _fs = require('graceful-fs');
 const fsnode = require('fs');
-const { ALLOWED_PATHS_ARR } = require('../utils/constants/index')
+const { ALLOWED_PATHS_ARR } = require('../utils/constants/index');
+const appInfo = require('../appInfo');
 
 module.exports = (api) => {
+  api.handleFileProblem = (desc, throwError) => {
+    api.log(desc, 'jsonFileManager');
+    api.writeLog(desc)
+
+    if (throwError) {
+      throw new Error(desc)
+    }  
+  }
+
   /**
    * Loads a JSON object from a filepath,
    * and saves it as empty with a description
    * if it doesnt exist
    */
-  api.loadJsonFile = (relativePath, description) => {
+  api.loadJsonFile = async (relativePath, description, handleMissing = true) => {
     if (ALLOWED_PATHS_ARR.includes(relativePath)) {
       const path = `${api.agamaDir}/${relativePath}`
 
       if (fs.existsSync(path)) {
-        let localString = fs.readFileSync(path, 'utf8');
+        let localString = await fs.readFile(path, 'utf8');
         let localJson
         
         try {
           localJson = JSON.parse(localString);
 
           if (localJson.data == null || localJson.description == null) {
-            api.log(`${path} file detected with deprecated format, saving with description.`, 'loadJsonFile');
-            api.writeLog(`${path} file detected with deprecated format, saving with description.`);
-
-            api.saveJsonFile({}, relativePath, description);
+            api.handleFileProblem(`${path} file detected with deprecated format.`, !handleMissing)
+            await api.saveJsonFile({}, relativePath, description);
           } else {
             localJson = localJson.data
           }
         } catch (e) {
-          api.log(`unable to parse local ${path}`, 'loadJsonFile');
+          console.log(e)
+
+          api.handleFileProblem(`unable to parse local ${path}`, !handleMissing)
           localJson = {};
         }
   
@@ -38,15 +48,13 @@ module.exports = (api) => {
   
         return localJson
       } else {
-        api.log(`local ${path} file is not found, saving empty json file.`, 'loadJsonFile');
-        api.writeLog(`local ${path} file is not found, saving empty json file.`);
-        api.saveJsonFile({}, relativePath, description);
+        api.handleFileProblem(`local ${path} file is not found, saving empty json file.`, !handleMissing)
+        await api.saveJsonFile({}, relativePath, description);
   
         return {};
       }
     } else {
-      api.log(`${path} path is not on the approved list of file paths, aborting and returning empty JSON.`, 'loadJsonFile');
-      api.writeLog(`${path} path is not on the approved list of file paths, aborting and returning empty JSON.`);
+      api.handleFileProblem(`${path} path is not on the approved list of file paths, aborting and returning empty JSON.`, !handleMissing)
 
       return {};
     }
@@ -56,32 +64,30 @@ module.exports = (api) => {
    * Saves JSON object to file, with optional description
    * for those who want to look at the file
    */
-  api.saveJsonFile = (
+  api.saveJsonFile = async (
     json,
     relativePath,
-    description = "No description for this file was provided by the wallet devs :("
+    description = "No description for this file was provided by the wallet devs :(",
+    handleErrors = true
   ) => {
     if (ALLOWED_PATHS_ARR.includes(relativePath)) {
       const path = `${api.agamaDir}/${relativePath}`;
 
       try {
         try {
-          _fs.accessSync(api.agamaDir, fs.constants.R_OK);
+          await fs.access(api.agamaDir, fs.constants.R_OK);
         } catch (e) {
           if (e.code == "EACCES") {
-            fsnode.chmodSync(path, "0666");
+            await fs.chmod(path, "0666");
           } else if (e.code === "ENOENT") {
-            api.log(`Verus Desktop directory not found`, "saveJsonFile");
+            api.handleFileProblem(`Verus Desktop directory not found`, !handleErrors)
+            return
           }
         }
 
-        fs.writeFileSync(
+        await fs.writeFile(
           path,
-          JSON.stringify({ description, data: json })
-            .replace(/,/g, ",\n") // format json in human readable form
-            .replace(/":/g, '": ')
-            .replace(/{/g, "{\n")
-            .replace(/}/g, "\n}"),
+          JSON.stringify({ description, data: json }),
           "utf8"
         );
 
@@ -90,22 +96,20 @@ module.exports = (api) => {
           "saveJsonFile"
         );
         api.writeLog(`json file is created successfully at: ${path}`);
+        return
       } catch (e) {
-        api.log(`error writing json to ${path}`, "saveJsonFile");
-        api.log(e, "saveJsonFile");
+        api.handleFileProblem(e, !handleErrors)
+        return
       }
     } else {
-      api.log(
-        `${path} path is not on the approved list of file paths, aborting file save.`,
-        "saveJsonFile"
-      );
-      api.writeLog(
-        `${path} path is not on the approved list of file paths, aborting file save.`
-      );
+      api.handleFileProblem(`${path} path is not on the approved list of file paths, aborting file save.`, !handleErrors)
+      return
     }
   };
 
-  api = require('./currency_data')(api)
+  api = require('./currencyData')(api)
   api = require('./nameCommitments')(api)
+  api = require('./backup')(api)
+  api = require('./updateLog')(api)
   return api;
 };
