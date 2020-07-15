@@ -14,6 +14,8 @@ module.exports = (api) => {
         api.electrumKeys = {};
       }
 
+      api.eclManagerClear(_chain.toLowerCase());
+
       const retObj = {
         msg: 'success',
         result: true,
