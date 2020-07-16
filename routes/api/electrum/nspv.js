@@ -6,39 +6,44 @@ const { toSats } = require('agama-wallet-lib/src/utils');
 
 module.exports = (api) => {
   api.nspvRequest = (coin, method, params) => {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `http://localhost:${api.nspvPorts[coin.toUpperCase()]}/`,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+    if (api.electrum.coinData[coin] &&
+        api.electrum.coinData[coin].nspv) {
+      return new Promise((resolve, reject) => {
+        const options = {
+          url: `http://localhost:${api.nspvPorts[coin.toUpperCase()]}/`,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method,
+            params,
+          }),
+        };
+
+        api.log(JSON.stringify({
           jsonrpc: '2.0',
           method,
           params,
-        }),
-      };
+        }), 'spv.nspv.req');
 
-      api.log(JSON.stringify({
-        jsonrpc: '2.0',
-        method,
-        params,
-      }), 'spv.nspv.req');
-
-      request(options, (error, response, body) => {
-        api.log(body, 'spv.nspv.req');
-        // TODO: proper error handling in ecl calls
-        try {
-          if (JSON) resolve(JSON.parse(body));
-          else resolve('error');
-        } catch (e) {
-          api.log('nspv json parse error', 'nspv');
-          api.log(e);
-          resolve('error');
-        }
+        request(options, (error, response, body) => {
+          api.log(body, 'spv.nspv.req');
+          // TODO: proper error handling in ecl calls
+          try {
+            if (JSON) resolve(JSON.parse(body));
+            else resolve('error');
+          } catch (e) {
+            api.log('nspv json parse error', 'nspv');
+            api.log(e);
+            resolve('error');
+          }
+        });
       });
-    });
+    } else {
+      resolve('error');
+    }
   };
 
   api.startNSPVDaemon = (coin) => {
