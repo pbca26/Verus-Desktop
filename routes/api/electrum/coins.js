@@ -37,7 +37,6 @@ module.exports = (api) => {
         port: api.nspvPorts[coin.toUpperCase()],
         proto: 'http',
       };
-      api.electrumServers[coin].serverList = 'none';
       servers = 'none';
       api.nspvProcesses[coin] = {
         process: nspv,
