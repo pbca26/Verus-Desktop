@@ -135,6 +135,8 @@ module.exports = (api) => {
       api.eth.connect = {};
       api.eth.wallet = {};
 
+      api.eclManagerClear();
+
       const retObj = {
         msg: 'success',
         result: 'result',

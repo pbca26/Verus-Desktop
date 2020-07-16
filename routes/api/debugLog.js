@@ -18,14 +18,26 @@ module.exports = (api) => {
       let _location;
 
       switch (_platform) {
-        case 'darwin':
-          api.kmdDir = api.appConfig.general.native.dataDir.length ? api.appConfig.general.native.dataDir : `${process.env.HOME}/Library/Application Support/Komodo`;
+        case "darwin":
+          api.kmdDir = global.USB_MODE
+            ? `${global.HOME}/Komodo`
+            : api.appConfig.general.native.dataDir.length
+            ? api.appConfig.general.native.dataDir
+            : `${process.env.HOME}/Library/Application Support/Komodo`;
           break;
-        case 'linux':
-          api.kmdDir = api.appConfig.general.native.dataDir.length ? api.appConfig.general.native.dataDir : `${process.env.HOME}/.komodo`;
+        case "linux":
+          api.kmdDir = global.USB_MODE
+            ? `${global.HOME}/Komodo`
+            : api.appConfig.general.native.dataDir.length
+            ? api.appConfig.general.native.dataDir
+            : `${process.env.HOME}/.komodo`;
           break;
-        case 'win32':
-          api.kmdDir = api.appConfig.general.native.dataDir.length ? api.appConfig.general.native.dataDir : `${process.env.APPDATA}/Komodo`;
+        case "win32":
+          api.kmdDir = global.USB_MODE
+            ? `${global.HOME}/Komodo`
+            : api.appConfig.general.native.dataDir.length
+            ? api.appConfig.general.native.dataDir
+            : `${process.env.APPDATA}/Komodo`;
           api.kmdDir = path.normalize(api.kmdDir);
           break;
       }

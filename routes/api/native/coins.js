@@ -1,16 +1,16 @@
-const request = require('request');
-
 module.exports = (api) => {
   api.native.activateNativeCoin = (
     coin,
-    startupParams = [],
+    startupOptions = [],
     daemon,
     fallbackPort,
     dirNames,
-    confName
+    confName,
+    tags = []
   ) => {
     let acOptions = []
     const chainParams = api.chainParams[coin];
+    if (tags.includes('is_komodo')) api.customKomodoNetworks[coin.toLowerCase()] = true
 
     for (let key in chainParams) {
       if (typeof chainParams[key] === "object") {
@@ -22,7 +22,7 @@ module.exports = (api) => {
       }
     }
 
-    acOptions = acOptions.concat(startupParams);
+    acOptions = acOptions.concat(startupOptions);
 
     return new Promise((resolve, reject) => {
       api
@@ -61,31 +61,31 @@ module.exports = (api) => {
   api.post('/native/coins/activate', (req, res) => {
     if (api.checkToken(req.body.token)) {
       const { chainTicker, launchConfig } = req.body
-      let { startupParams, daemon, fallbackPort, dirNames, confName } = launchConfig
-
-      // Push in startupOptions according to config file
-      if (
-        api.appConfig.coin.native.dataDir[chainTicker] &&
-        api.appConfig.coin.native.dataDir[chainTicker].length > 0
-      ) {
-        startupParams.push(`-datadir=${api.appConfig.coin.native.dataDir[chainTicker]}`)
-      }
+      let {
+        startupOptions,
+        daemon,
+        fallbackPort,
+        dirNames,
+        confName,
+        tags,
+      } = launchConfig;
 
       if (
         api.appConfig.coin.native.stakeGuard[chainTicker] &&
         api.appConfig.coin.native.stakeGuard[chainTicker].length > 0
       ) {
-        startupParams.push(`-cheatcatcher=${api.appConfig.coin.native.stakeGuard[chainTicker]}`)
+        startupOptions.push(`-cheatcatcher=${api.appConfig.coin.native.stakeGuard[chainTicker]}`)
       }
 
       api.native
         .activateNativeCoin(
           chainTicker,
-          startupParams,
+          startupOptions,
           daemon,
           fallbackPort,
           dirNames,
-          confName
+          confName,
+          tags
         )
         .then(result => {
           const retObj = {
@@ -100,6 +100,7 @@ module.exports = (api) => {
             msg: "error",
             result: e.message
           };
+          
           res.end(JSON.stringify(retObj));
         });
     } else {

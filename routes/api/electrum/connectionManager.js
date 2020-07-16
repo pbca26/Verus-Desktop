@@ -9,7 +9,6 @@ const PING_TIME = 60;
 // TODO: reconnect/cycle if electrum server is not responding
 
 let electrumServers = {};
-let lock = {};
 
 getProtocolVersion = (_ecl, api) => {
   let protocolVersion;
@@ -52,6 +51,11 @@ getProtocolVersion = (_ecl, api) => {
 
 module.exports = (api) => {
   api.eclStack = [];
+
+  api.eclManagerClear = (coin) => {
+    if (coin) delete electrumServers[coin];
+    electrumServers = {};
+  };
 
   api.eclManager = {
     getServer: async(coin, customServer) => {
