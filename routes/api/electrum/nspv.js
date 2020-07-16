@@ -1,5 +1,6 @@
 const Promise = require('bluebird');
 const request = require('request');
+const { spawn } = require('child_process');
 // TODO: read ports from coins file
 const { toSats } = require('agama-wallet-lib/src/utils');
 
@@ -32,11 +33,38 @@ module.exports = (api) => {
           if (JSON) resolve(JSON.parse(body));
           else resolve('error');
         } catch (e) {
-          console.log(e);
-          resolve('json parse error');
+          api.log('nspv json parse error', 'nspv');
+          api.log(e);
+          resolve('error');
         }
       });
     });
+  };
+
+  api.startNSPVDaemon = (coin) => {
+    const nspv = spawn(
+      `${api.komodocliDir}/nspv`,
+      coin.toUpperCase() === 'KMD' ? [] : [coin.toUpperCase()],
+      {
+        cwd: api.agamaDir,
+      }, []
+    );
+
+    if (process.argv.indexOf('nspv-debug') > -1) {
+      nspv.stdout.on('data', (data) => {
+        api.log(`stdout: ${data}`, 'NSPV');
+      });
+      
+      nspv.stderr.on('data', (data) => {
+        api.log(`stderr: ${data}`, 'NSPV');
+      });
+    }
+    
+    nspv.on('close', (code) => {
+      api.log(`child process exited with code ${code}`, 'NSPV');
+    });
+
+    return nspv;
   };
 
   api.stopNSPVDaemon = (coin) => {

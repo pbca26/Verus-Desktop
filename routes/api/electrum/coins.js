@@ -1,6 +1,5 @@
 const { getRandomIntInclusive } = require('agama-wallet-lib/src/utils');
 const fs = require('fs-extra');
-const { spawn } = require('child_process');
 
 module.exports = (api) => {
   api.findCoinName = (network) => {
@@ -31,27 +30,7 @@ module.exports = (api) => {
         api.nspvPorts[coin.toUpperCase()]) {
       api.log(`start ${coin.toUpperCase()} in NSPV at port ${api.nspvPorts[coin.toUpperCase()]}`, 'spv.coin');
       
-      const nspv = spawn(
-        `${api.komodocliDir}/nspv`,
-        coin.toUpperCase() === 'KMD' ? [] : [coin.toUpperCase()],
-        {
-          cwd: api.agamaDir,
-        }, []
-      );
-
-      if (process.argv.indexOf('nspv-debug') > -1) {
-        nspv.stdout.on('data', (data) => {
-          api.log(`stdout: ${data}`, 'NSPV');
-        });
-        
-        nspv.stderr.on('data', (data) => {
-          api.log(`stderr: ${data}`, 'NSPV');
-        });
-      }
-      
-      nspv.on('close', (code) => {
-        api.log(`child process exited with code ${code}`, 'NSPV');
-      });
+      const nspv = api.startNSPVDaemon(coin);
 
       randomServer = {
         ip: 'localhost',
