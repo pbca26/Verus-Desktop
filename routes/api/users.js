@@ -44,16 +44,40 @@ module.exports = (api) => {
       }
      
       fs.writeFileSync(usersFileName,
-                  JSON.stringify(users)
-                  .replace(/,/g, ',\n') // format json in human readable form
-                  .replace(/":/g, '": ')
-                  .replace(/{/g, '{\n')
-                  .replace(/}/g, '\n}'), 'utf8');
+                  JSON.stringify(users), 'utf8');
 
       
       api.log('users.json write file is done', 'users');
       api.log(`app users.json file is created successfully at: ${api.agamaDir}`, 'users');
       api.writeLog(`app users.json file is created successfully at: ${api.agamaDir}`);
+    } catch (e) {
+      api.log('error writing users', 'users');
+      api.log(e, 'users');
+    }
+  }
+
+  api.backupLocalUsers = () => {
+    const users = api.loadLocalUsers()
+    const usersFileName = `${api.agamaDir}/users_backup_${new Date().getTime()}.json`;
+
+    try {
+      try {
+        _fs.accessSync(api.agamaDir, fs.constants.R_OK)
+      } catch (e) {
+        if (e.code == 'EACCES') {
+          fsnode.chmodSync(usersFileName, '0666');
+        } else if (e.code === 'ENOENT') {
+          api.log('users directory not found', 'users');
+        }
+      }
+     
+      fs.writeFileSync(usersFileName,
+                  JSON.stringify(users), 'utf8');
+
+      
+      api.log(`${usersFileName} write file is done`, 'users');
+      api.log(`app ${usersFileName} file is created successfully at: ${api.agamaDir}`, 'users');
+      api.writeLog(`app ${usersFileName} file is created successfully at: ${api.agamaDir}`);
     } catch (e) {
       api.log('error writing users', 'users');
       api.log(e, 'users');
@@ -74,12 +98,21 @@ module.exports = (api) => {
 
         res.end(JSON.stringify(retObj));
       } else {
-        api.saveLocalUsers(req.body.userObj);
+        let retObj 
 
-        const retObj = {
-          msg: 'success',
-          result: 'users saved',
-        };
+        try {
+          api.saveLocalUsers(req.body.userObj);
+
+          retObj = {
+            msg: 'success',
+            result: 'users saved',
+          };
+        } catch(e) {
+          retObj = {
+            msg: 'error',
+            result: e.message,
+          };
+        }
 
         res.end(JSON.stringify(retObj));
       }
@@ -97,14 +130,56 @@ module.exports = (api) => {
    *  type: POST
    *  params: none
    */
+  api.post('/users/backup', (req, res, next) => {
+    if (api.checkToken(req.body.token)) {
+      let retObj 
+
+      try {
+        api.backupLocalUsers();
+
+        retObj = {
+          msg: 'success',
+          result: 'users saved',
+        };
+      } catch(e) {
+        retObj = {
+          msg: 'error',
+          result: e.message,
+        };
+      }
+
+      res.end(JSON.stringify(retObj));
+    } else {
+      const retObj = {
+        msg: 'error',
+        result: 'unauthorized access',
+      };
+
+      res.end(JSON.stringify(retObj));
+    }
+  });
+
+  /*
+   *  type: POST
+   *  params: none
+   */
   api.post('/users/reset', (req, res, next) => {
     if (api.checkToken(req.body.token)) {
-      api.saveLocalUsers({});
+      let retObj 
 
-      const retObj = {
-        msg: 'success',
-        result: 'users saved',
-      };
+      try {
+        api.saveLocalUsers({});
+
+        retObj = {
+          msg: 'success',
+          result: 'users saved',
+        };
+      } catch(e) {
+        retObj = {
+          msg: 'error',
+          result: e.message,
+        };
+      }
 
       res.end(JSON.stringify(retObj));
     } else {
@@ -122,11 +197,19 @@ module.exports = (api) => {
    *
    */
   api.get('/users/load', (req, res, next) => {
-    const obj = api.loadLocalUsers();
-    res.end(JSON.stringify({
-      msg: 'success',
-      result: obj,
-    }));
+    try {
+      const obj = api.loadLocalUsers();
+      res.end(JSON.stringify({
+        msg: 'success',
+        result: obj,
+      }));
+    } catch (e) {
+      res.end(JSON.stringify({
+        msg: 'error',
+        result: e.message,
+      }));
+    }
+    
   });
 
   return api;

@@ -47,12 +47,7 @@ module.exports = (shepherd) => {
           return new Promise((resolve, reject) => {
             const result = 'spv-cache.json write file is done';
 
-            const err = fs.writeFileSync(spvCacheFileName,
-                        JSON.stringify(shepherd.electrumCache)
-                        /*.replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}')*/, 'utf8');
+            const err = fs.writeFileSync(spvCacheFileName, JSON.stringify(shepherd.electrumCache), 'utf8');
 
             if (err)
               return shepherd.log(err);
