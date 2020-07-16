@@ -70,7 +70,8 @@ module.exports = (api) => {
   api.stopNSPVDaemon = (coin) => {
     if (coin === 'all') {
       for (let key in api.electrum.coinData) {
-        if (api.electrum.coinData[key].nspv &&
+        if (api.electrum.coinData[key] &&
+            api.electrum.coinData[key].nspv &&
             api.nspvProcesses[key].pid) {
           api.log(`NSPV daemon ${key.toUpperCase()} PID ${api.nspvProcesses[key].pid} is stopped`, 'spv.nspv.coin');
           api.nspvProcesses[key].process.kill('SIGINT');
@@ -78,7 +79,8 @@ module.exports = (api) => {
         }
       }
     } else {
-      if (api.electrum.coinData[coin].nspv &&
+      if (api.electrum.coinData[coin] &&
+          api.electrum.coinData[coin].nspv &&
           api.nspvProcesses[coin].pid) {
         api.log(`NSPV daemon ${coin.toUpperCase()} PID ${api.nspvProcesses[coin].pid} is stopped`, 'spv.nspv.coin');
         api.nspvProcesses[coin].process.kill('SIGINT');
