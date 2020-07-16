@@ -131,7 +131,7 @@ module.exports = (api) => {
       const { chainTicker, launchConfig } = req.body
       const { customServers, tags, txFee, startupOptions } = launchConfig
 
-      const result = api.addElectrumCoin(
+      const result = await api.addElectrumCoin(
         chainTicker,
         customServers || [],
         tags,
