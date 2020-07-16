@@ -44,7 +44,7 @@ module.exports = (api) => {
         pid: nspv.pid,
       };
       
-      api.log(`${coin.toUpperCase()} NSPV daemon PID ${nspv.pid}`, 'spv.coin');      
+      api.log(`${coin.toUpperCase()} NSPV daemon PID ${nspv.pid}`, 'spv.coin');
     } else {
       // pick a random server to communicate with
       if (servers &&

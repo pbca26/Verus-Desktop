@@ -67,6 +67,23 @@ module.exports = (api) => {
     
     nspv.on('close', (code) => {
       api.log(`child process exited with code ${code}`, 'NSPV');
+      if (api.nspvProcesses[coin]) {
+        api.nspvProcesses[coin] = 'exited';
+        
+        setTimeout(() => {
+            // attempt to revive supposedly dead daemon
+          if (api.nspvProcesses[coin] &&
+              api.nspvProcesses[coin] === 'exited') {
+            const nspvProcess = api.startNSPVDaemon(coin);
+            api.nspvProcesses[coin] = {
+              process: nspvProcess,
+              pid: nspvProcess.pid,
+            };
+
+            api.log(`${coin.toUpperCase()} NSPV daemon PID ${nspvProcess.pid} (restart)`, 'spv.coin');
+          }
+        }, 5000);
+      }
     });
 
     return nspv;
