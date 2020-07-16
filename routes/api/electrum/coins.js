@@ -39,13 +39,15 @@ module.exports = (api) => {
         }, []
       );
 
-      nspv.stdout.on('data', (data) => {
-        api.log(`stdout: ${data}`, 'NSPV');
-      });
-      
-      nspv.stderr.on('data', (data) => {
-        api.log(`stderr: ${data}`, 'NSPV');
-      });
+      if (process.argv.indexOf('nspv-debug') > -1) {
+        nspv.stdout.on('data', (data) => {
+          api.log(`stdout: ${data}`, 'NSPV');
+        });
+        
+        nspv.stderr.on('data', (data) => {
+          api.log(`stderr: ${data}`, 'NSPV');
+        });
+      }
       
       nspv.on('close', (code) => {
         api.log(`child process exited with code ${code}`, 'NSPV');
