@@ -97,7 +97,7 @@ module.exports = (api) => {
       if (process.argv.indexOf('nspv-debug') > -1) api.log(`stdout: ${data}`, 'NSPV');
 
       if (data.indexOf('NSPV_req "getnSPV" request sent to node') > -1 && !isNSPVReady[coin]) {
-        api.log(`${coin} is ready to serve requests`, 'NSPV');
+        api.log(`${coin} nspv is ready to serve requests`, 'NSPV');
         isNSPVReady[coin] = true;
       }
     });
@@ -106,7 +106,7 @@ module.exports = (api) => {
       if (process.argv.indexOf('nspv-debug') > -1) api.log(`stderr: ${data}`, 'NSPV');
 
       if (data.indexOf('NSPV_req "getnSPV" request sent to node') > -1 && !isNSPVReady[coin]) {
-        api.log(`${coin} is ready to serve requests`, 'NSPV');
+        api.log(`${coin} nspv is ready to serve requests`, 'NSPV');
         isNSPVReady[coin] = true;
       }
     });
@@ -147,6 +147,7 @@ module.exports = (api) => {
           for (let i = 0; i < nspvCheckReadyInterval[key].length; i++) {
             clearInterval(nspvCheckReadyInterval[key][i]);
           }
+          nspvCheckReadyInterval[coin] = [];
           isNSPVReady[key] = false;
           api.nspvProcesses[key].process.kill('SIGINT');
           delete api.nspvProcesses[key];
@@ -157,9 +158,11 @@ module.exports = (api) => {
           api.electrum.coinData[coin].nspv &&
           api.nspvProcesses[coin].pid) {
         api.log(`NSPV daemon ${coin.toUpperCase()} PID ${api.nspvProcesses[coin].pid} is stopped`, 'spv.nspv.coin');
+
         for (let i = 0; i < nspvCheckReadyInterval[coin].length; i++) {
           clearInterval(nspvCheckReadyInterval[coin][i]);
         }
+        nspvCheckReadyInterval[coin] = [];
         isNSPVReady[coin] = false;
         api.nspvProcesses[coin].process.kill('SIGINT');
         delete api.nspvProcesses[coin];
