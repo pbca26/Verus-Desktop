@@ -18,7 +18,7 @@ getProtocolVersion = (_ecl, api) => {
     .then((serverData) => {
       if (serverData &&
           JSON.stringify(serverData).indexOf('server.version already sent') > -1) {
-        api.log('server version already sent', 'ecl.manager');
+        if (process.argv.indexOf('spv-debug') > -1) api.log('server version already sent', 'ecl.manager');
         resolve('sent');
       }
 
@@ -43,7 +43,7 @@ getProtocolVersion = (_ecl, api) => {
         resolve(-777);
       }
 
-      api.log(`ecl ${`${_ecl.host}:${_ecl.port}:${_ecl.protocol || 'tcp'}`} protocol version: ${protocolVersion}`, 'ecl.manager');
+      if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl ${`${_ecl.host}:${_ecl.port}:${_ecl.protocol || 'tcp'}`} protocol version: ${protocolVersion}`, 'ecl.manager');
       resolve(protocolVersion);
     });
   });
@@ -59,7 +59,7 @@ module.exports = (api) => {
 
   api.eclManager = {
     getServer: async(coin, customServer) => {
-      if (customServer) api.log(`custom server ${customServer.ip}:${customServer.port}:${customServer.proto}`, 'ecl.manager');
+      if (customServer && process.argv.indexOf('spv-debug') > -1) api.log(`custom server ${customServer.ip}:${customServer.port}:${customServer.proto}`, 'ecl.manager');
       if ((customServer && !electrumServers[coin][`${customServer.ip}:${customServer.port}:${customServer.proto}`]) ||
           !electrumServers[coin] ||
           (electrumServers[coin] && !Object.keys(electrumServers[coin]).length)) {
@@ -79,12 +79,12 @@ module.exports = (api) => {
           ];
         }
 
-        api.log('ecl server doesnt exist yet, lets add', 'ecl.manager')
+        if (process.argv.indexOf('spv-debug') > -1) api.log('ecl server doesnt exist yet, lets add', 'ecl.manager')
 
         const ecl = new api.electrumJSCore(serverStr[1], serverStr[0], serverStr[2]);
-        api.log(`ecl conn ${serverStr}`, 'ecl.manager');
+        if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl conn ${serverStr}`, 'ecl.manager');
         ecl.connect();
-        api.log(`ecl req protocol ${serverStr}`, 'ecl.manager');
+        if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl req protocol ${serverStr}`, 'ecl.manager');
         const eclProtocolVersion = await getProtocolVersion(ecl, api);
         
         if (!electrumServers[coin]) {
@@ -100,12 +100,12 @@ module.exports = (api) => {
         return electrumServers[coin][serverStr.join(':')].server;
       } else {
         if (customServer) {
-          api.log(`ecl ${coin} server exists, custom server param provided`, 'ecl.manager');
+          if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl ${coin} server exists, custom server param provided`, 'ecl.manager');
           let ecl = electrumServers[coin][`${customServer.ip}:${customServer.port}:${customServer.proto}`];
           ecl.lastReq = Date.now();
           return ecl.server;
         } else {
-          api.log(`ecl ${coin} server exists`, 'ecl.manager');
+          if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl ${coin} server exists`, 'ecl.manager');
           let ecl = Object.keys(electrumServers[coin]) > 1 ? electrumServers[coin][Object.keys(electrumServers[coin])[getRandomIntInclusive(0, Object.keys(electrumServers[coin]).length)]] : electrumServers[coin][Object.keys(electrumServers[coin])[0]];
           ecl.lastReq = Date.now();
           return ecl.server;
@@ -117,32 +117,32 @@ module.exports = (api) => {
   api.initElectrumManager = () => {
     setInterval(() => {
       for (let coin in electrumServers) {
-        api.log(`ecl check coin ${coin}`, 'ecl.manager');
+        if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl check coin ${coin}`, 'ecl.manager');
 
         for (let serverStr in electrumServers[coin]) {
           const pingSecPassed = checkTimestamp(electrumServers[coin][serverStr].lastPing);
-          api.log(`ping sec passed ${pingSecPassed}`, 'ecl.manager');
+          if (process.argv.indexOf('spv-debug') > -1) api.log(`ping sec passed ${pingSecPassed}`, 'ecl.manager');
           
           if (pingSecPassed > PING_TIME) {
-            api.log(`ecl ${coin} ${serverStr} ping limit passed, send ping`, 'ecl.manager');
+            if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl ${coin} ${serverStr} ping limit passed, send ping`, 'ecl.manager');
 
             getProtocolVersion(electrumServers[coin][serverStr].server, api)
             .then((eclProtocolVersion) => {
               if (eclProtocolVersion === 'sent') {
-                api.log(`ecl ${coin} ${serverStr} ping success`, 'ecl.manager');
+                if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl ${coin} ${serverStr} ping success`, 'ecl.manager');
                 electrumServers[coin][serverStr].lastPing = Date.now();
               } else {
-                api.log(`ecl ${coin} ${serverStr} ping fail, remove server`, 'ecl.manager');
+                if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl ${coin} ${serverStr} ping fail, remove server`, 'ecl.manager');
                 delete electrumServers[coin][serverStr];
               }
             });
           }
 
           const reqSecPassed = checkTimestamp(electrumServers[coin][serverStr].lastReq);
-          api.log(`req sec passed ${reqSecPassed}`, 'ecl.manager');
+          if (process.argv.indexOf('spv-debug') > -1) api.log(`req sec passed ${reqSecPassed}`, 'ecl.manager');
           
           if (reqSecPassed > MAX_IDLE_TIME) {
-            api.log(`ecl ${coin} ${serverStr} req limit passed, disconnect server`, 'ecl.manager');
+            if (process.argv.indexOf('spv-debug') > -1) api.log(`ecl ${coin} ${serverStr} req limit passed, disconnect server`, 'ecl.manager');
             electrumServers[coin][serverStr].server.close();
             delete electrumServers[coin][serverStr];
           }
