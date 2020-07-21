@@ -5,21 +5,29 @@ const { spawn } = require('child_process');
 const { toSats } = require('agama-wallet-lib/src/utils');
 let isNSPVReady = {};
 let nspvCheckReadyInterval = {};
+let nspvCheckReadyIntervalIncrement = -1;
 const NSPV_CHECK_READY_INTERVAL_TIMEOUT = 50;
 
 module.exports = (api) => {
   api.nspvCheckReady = (coin) => {
     return new Promise((resolve, reject) => {
       if (!isNSPVReady[coin]) {
-        nspvCheckReadyInterval[coin] = setInterval(() => {
+        if (!nspvCheckReadyInterval[coin]) nspvCheckReadyInterval[coin] = [];
+        if (process.argv.indexOf('nspv-debug') > -1) api.log(`interval ${nspvCheckReadyIntervalIncrement} nspv daemon check set`, 'NSPV');
+        nspvCheckReadyIntervalIncrement++;
+        
+        const interval = setInterval((nspvCheckReadyIntervalIncrement) => {
+          
           if (isNSPVReady[coin]) {
             isNSPVReady[coin] = true;
-            clearInterval(nspvCheckReadyInterval[coin]);
-            delete nspvCheckReadyInterval[coin];
+            clearInterval(nspvCheckReadyInterval[coin][nspvCheckReadyIntervalIncrement]);
+            if (process.argv.indexOf('nspv-debug') > -1) api.log(`interval ${nspvCheckReadyIntervalIncrement} nspv daemon check cleared`, 'NSPV');
           } else {
             if (process.argv.indexOf('nspv-debug') > -1) api.log(`awaiting ${coin} nspv daemon`, 'NSPV');
           }
-        }, NSPV_CHECK_READY_INTERVAL_TIMEOUT);
+        }, NSPV_CHECK_READY_INTERVAL_TIMEOUT, nspvCheckReadyIntervalIncrement);
+
+        nspvCheckReadyInterval[coin].push(interval);
       }
 
       resolve(isNSPVReady[coin]);
@@ -136,7 +144,9 @@ module.exports = (api) => {
             api.electrum.coinData[key].nspv &&
             api.nspvProcesses[key].pid) {
           api.log(`NSPV daemon ${key.toUpperCase()} PID ${api.nspvProcesses[key].pid} is stopped`, 'spv.nspv.coin');
-          clearInterval(nspvCheckReadyInterval[key]);
+          for (let i = 0; i < nspvCheckReadyInterval[key].length; i++) {
+            clearInterval(nspvCheckReadyInterval[key][i]);
+          }
           isNSPVReady[key] = false;
           api.nspvProcesses[key].process.kill('SIGINT');
           delete api.nspvProcesses[key];
@@ -147,7 +157,9 @@ module.exports = (api) => {
           api.electrum.coinData[coin].nspv &&
           api.nspvProcesses[coin].pid) {
         api.log(`NSPV daemon ${coin.toUpperCase()} PID ${api.nspvProcesses[coin].pid} is stopped`, 'spv.nspv.coin');
-        clearInterval(nspvCheckReadyInterval[coin]);
+        for (let i = 0; i < nspvCheckReadyInterval[coin].length; i++) {
+          clearInterval(nspvCheckReadyInterval[coin][i]);
+        }
         isNSPVReady[coin] = false;
         api.nspvProcesses[coin].process.kill('SIGINT');
         delete api.nspvProcesses[coin];
