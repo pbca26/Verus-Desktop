@@ -7,7 +7,6 @@ const {
   electrumMerkleRoot,
 } = require('agama-wallet-lib/src/block');
 const btcnetworks = require('agama-wallet-lib/src/bitcoinjs-networks');
-const dpowCoins = require('agama-wallet-lib/src/electrum-servers-dpow');
 
 // TODO: dpow confs cache storage, eth/erc20 pending txs cache
 
@@ -131,11 +130,7 @@ module.exports = (api) => {
             const result = 'spv-cache.json write file is done';
 
             const err = fs.writeFileSync(spvCacheFileName,
-                        JSON.stringify(api.electrumCache)
-                        /*.replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}')*/, 'utf8');
+                        JSON.stringify(api.electrumCache), 'utf8');
 
             if (err)
               return api.log(err, 'spv.cache');
@@ -198,7 +193,7 @@ module.exports = (api) => {
         api.log(`${network} ${txid} get from pending txs cache`, 'spv.cache.transaction.pending');
         resolve(_pendingTxFromCache);
       } else {
-        api.log(`${network.toUpperCase()} dpow confs spv: ${dpowCoins.indexOf(network.toUpperCase()) > -1 ? true : false}`, 'spv.dpow.confs');
+        api.log(`${network.toUpperCase()} dpow confs spv: ${api.dpowCoins.indexOf(network.toUpperCase()) > -1 ? true : false}`, 'spv.dpow.confs');
         
         if (api.electrum.coinData[network.toLowerCase()].nspv) {
           if (!api.electrumCache[network].tx[txid]) {
@@ -227,11 +222,11 @@ module.exports = (api) => {
               (!api.electrumCache[network].verboseTx[txid].hasOwnProperty('confirmations') || !api.electrumCache[network].verboseTx[txid].hasOwnProperty('rawconfirmations'))) {
             api.log(`electrum raw input tx ${txid}`, 'spv.cache');
 
-            if (dpowCoins.indexOf(network.toUpperCase()) > -1) {
+            if (api.dpowCoins.indexOf(network.toUpperCase()) > -1) {
               api.log(`${network.toUpperCase()} request dpow data update`, 'spv.dpow.confs');
             }
             
-            ecl.blockchainTransactionGet(txid, dpowCoins.indexOf(network.toUpperCase()) > -1 ? true : false)
+            ecl.blockchainTransactionGet(txid, api.dpowCoins.indexOf(network.toUpperCase()) > -1 ? true : false)
             .then((_rawtxJSON) => {
               if (_rawtxJSON.hasOwnProperty('hex')) {
                 api.electrumCache[network].tx[txid] = _rawtxJSON.hex;

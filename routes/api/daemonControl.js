@@ -407,7 +407,6 @@ module.exports = (api) => {
     let port = null;
 
     api.log(`${coin} daemon activation requested with ${daemon} binary...`, 'native.process');
-    api.log(`selected data: ${JSON.stringify(acOptions, null, '\t')}`, 'native.confd');
 
     return new Promise((resolve, reject) => {
       // Set coin daemon bin location into memory if it doesn't exist there yet
@@ -430,6 +429,17 @@ module.exports = (api) => {
         api.setCoinDir(coinLc, dirNames)
         api.log(`${coin} dir path set to ${api[`${coinLc}Dir`]}...`, 'native.process');
       } else api.log(`${coin} data directory retrieved...`, 'native.process');
+
+      if (global.USB_MODE) {
+        acOptions.push(`-datadir=${api[`${coin.toLowerCase()}Dir`]}`)
+      } else if (
+        api.appConfig.coin.native.dataDir[coin] &&
+        api.appConfig.coin.native.dataDir[coin].length > 0
+      ) {
+        acOptions.push(`-datadir=${api.appConfig.coin.native.dataDir[chainTicker]}`)
+      }
+
+      api.log(`selected data: ${JSON.stringify(acOptions, null, '\t')}`, 'native.confd');
 
       api.initCoinDir(coinLc)
       .then(() => {

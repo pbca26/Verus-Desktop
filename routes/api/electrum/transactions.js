@@ -1,7 +1,6 @@
 const async = require('async');
 const Promise = require('bluebird');
 const { hex2str } = require('agama-wallet-lib/src/crypto/utils');
-const { isKomodoCoin } = require('agama-wallet-lib/src/coin-helpers');
 const { pubToElectrumScriptHashHex } = require('agama-wallet-lib/src/keys');
 const btcnetworks = require('agama-wallet-lib/src/bitcoinjs-networks');
 
@@ -232,7 +231,7 @@ module.exports = (api) => {
                               for (let i = 0; i < decodedTx.outputs.length; i++) {
                                 if (decodedTx.outputs[i].scriptPubKey.type === 'nulldata') {
                                   if (isKv &&
-                                      isKomodoCoin(network)) {
+                                      api.isKomodo(network)) {
                                     opreturn = {
                                       kvHex: decodedTx.outputs[i].scriptPubKey.hex,
                                       kvAsm: decodedTx.outputs[i].scriptPubKey.asm,
@@ -283,7 +282,8 @@ module.exports = (api) => {
                                       formattedTx.vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
                                       formattedTx.opreturn = opreturn;
 
-                                      if (api.electrumCache[network] &&
+                                      if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                          api.electrumCache[network] &&
                                           api.electrumCache[network].verboseTx &&
                                           api.electrumCache[network].verboseTx[transaction.tx_hash]) {
                                         formattedTx.dpowSecured = false;
@@ -322,7 +322,8 @@ module.exports = (api) => {
                                       formattedTx[1].vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
                                       formattedTx[1].opreturn = opreturn[1];
 
-                                      if (api.electrumCache[network] &&
+                                      if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                          api.electrumCache[network] &&
                                           api.electrumCache[network].verboseTx &&
                                           api.electrumCache[network].verboseTx[transaction.tx_hash]) {
                                         formattedTx[0].dpowSecured = false;

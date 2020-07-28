@@ -11,11 +11,6 @@ const RpcError = require('../utils/rpc/rpcError')
 
 module.exports = (api) => {
   api.native.callDaemon = (coin, cmd, params, token) => {   
-    //TODO: DELETE
-    //console.log(coin)
-    //console.log(cmd)
-    //console.log(params)
-
     return new Promise((resolve, reject) => {
       let _payload;
   

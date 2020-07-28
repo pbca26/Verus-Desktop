@@ -1,6 +1,5 @@
 const { getRandomIntInclusive } = require('agama-wallet-lib/src/utils');
 const fs = require('fs-extra');
-const { spawn } = require('child_process');
 
 module.exports = (api) => {
   api.findCoinName = (network) => {
@@ -11,48 +10,40 @@ module.exports = (api) => {
     }
   }
 
-  api.addElectrumCoin = async(coin, enableNspv) => {
+  api.addElectrumCoin = async(coin, customServers = [], tags = [], txFee, enableNspv) => {
     coin = coin.toLowerCase();
-    const servers = api.electrumServers[coin].serverList;
+    
+    if (customServers.length > 0 && txFee != null && !isNaN(txFee) && api.electrumServers[coin] == null) {
+      api.electrumServers[coin] = {
+        serverList: customServers,
+        txfee: txFee
+      }
+    }
+
+    if (tags.includes('is_komodo')) api.customKomodoNetworks[coin] = true
+
     // select random server
     let randomServer;
-
+    let servers = api.electrumServers[coin] ? api.electrumServers[coin].serverList : []
+    
     if (enableNspv &&
         api.nspvPorts[coin.toUpperCase()]) {
       api.log(`start ${coin.toUpperCase()} in NSPV at port ${api.nspvPorts[coin.toUpperCase()]}`, 'spv.coin');
       
-      const nspv = spawn(
-        `${api.komodocliDir}/nspv`,
-        coin.toUpperCase() === 'KMD' ? [] : [coin.toUpperCase()],
-        {
-          cwd: api.agamaDir,
-        }, []
-      );
-
-      nspv.stdout.on('data', (data) => {
-        api.log(`stdout: ${data}`, 'NSPV');
-      });
-      
-      nspv.stderr.on('data', (data) => {
-        api.log(`stderr: ${data}`, 'NSPV');
-      });
-      
-      nspv.on('close', (code) => {
-        api.log(`child process exited with code ${code}`, 'NSPV');
-      });
+      const nspv = api.startNSPVDaemon(coin);
 
       randomServer = {
         ip: 'localhost',
         port: api.nspvPorts[coin.toUpperCase()],
         proto: 'http',
       };
-      api.electrumServers[coin].serverList = 'none';
+      servers = 'none';
       api.nspvProcesses[coin] = {
         process: nspv,
         pid: nspv.pid,
       };
       
-      api.log(`${coin.toUpperCase()} NSPV daemon PID ${nspv.pid}`, 'spv.coin');      
+      api.log(`${coin.toUpperCase()} NSPV daemon PID ${nspv.pid}`, 'spv.coin');
     } else {
       // pick a random server to communicate with
       if (servers &&
@@ -70,7 +61,7 @@ module.exports = (api) => {
         }
       }
     }
-
+    
     api.electrum.coinData[coin] = {
       name: coin,
       server: {
@@ -78,8 +69,8 @@ module.exports = (api) => {
         port: randomServer.port,
         proto: randomServer.proto,
       },
-      serverList: api.electrumServers[coin].serverList ? api.electrumServers[coin].serverList : 'none',
-      txfee: coin === 'btc' ? 'calculated' : api.electrumServers[coin].txfee,
+      serverList: servers ? servers : 'none',
+      txfee: coin === 'btc' ? 'calculated' : api.electrumServers[coin] ? api.electrumServers[coin].txfee : 0,
     };
 
     if (enableNspv) {
@@ -136,9 +127,15 @@ module.exports = (api) => {
 
   api.post('/electrum/coins/activate', async(req, res, next) => {
     if (api.checkToken(req.body.token)) {
+      const { chainTicker, launchConfig } = req.body
+      const { customServers, tags, txFee, startupOptions } = launchConfig
+
       const result = await api.addElectrumCoin(
-        req.body.chainTicker,
-        req.body.launchConfig.startupParams && req.body.launchConfig.startupParams.nspv
+        chainTicker,
+        customServers || [],
+        tags,
+        txFee,
+        startupOptions && startupOptions.nspv
       );
 
       const retObj = {
@@ -193,7 +190,7 @@ module.exports = (api) => {
     for (let key in api.electrumJSNetworks) {
       if (!api.electrumServers[key] ||
           (api.electrumServers[key] && !api.electrumServers[key].serverList)) {
-        api.log(`disable ${key}, coin config check not passed`, 'spv.coin');
+        //api.log(`disable ${key}, coin config check not passed`, 'spv.coin');
         delete api.electrumServers[key];
         delete api.electrumServersFlag[key];
       } else {
