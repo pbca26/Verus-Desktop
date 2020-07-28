@@ -181,7 +181,7 @@ const appConfig = {
         },
         filterGenerateTransactions: {
           type: 'checkbox',
-          displayName: 'Seperate mining/staking transactions',
+          displayName: 'Separate mining/staking transactions',
           info: 'Filter all mining/staking related transactions out of the main wallet tab, and only show them under the mining tab.',
         },
       }
