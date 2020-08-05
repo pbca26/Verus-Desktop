@@ -23,7 +23,7 @@ module.exports = (api) => {
 
   api.initLogfile = (coin) => {
     return new Promise((resolve, reject) => {
-      const logName = `${api.agamaDir}/${coin}.log`;
+      const logName = `${api.paths.agamaDir}/${coin}.log`;
 
       api.log(`initializing ${coin} log file for verus-desktop`, 'native.process');
       fs.access(logName, fs.R_OK | fs.W_OK)
@@ -126,7 +126,7 @@ module.exports = (api) => {
   api.initConffile = (coin, confName, fallbackPort) => {
     const coinLc = coin.toLowerCase()
     return new Promise((resolve, reject) => {
-      const confFile = `${api[`${coinLc}Dir`]}/${confName == null ? coin : confName}.conf`;
+      const confFile = `${api.paths[`${coinLc}Dir`]}/${confName == null ? coin : confName}.conf`;
 
       api.log(`initializing ${coinLc} conf file for verus-desktop`, 'native.process');
       fs.access(confFile, fs.R_OK | fs.W_OK)
@@ -219,7 +219,7 @@ module.exports = (api) => {
 
   api.initCoinDir = (coinLc) => {
     return new Promise((resolve, reject) => {
-      const coinDir = api[`${coinLc}Dir`];
+      const coinDir = api.paths[`${coinLc}Dir`];
 
       api.log(`initializing ${coinLc} directory file for verus-desktop`, 'native.process');
       fs.access(coinDir, fs.R_OK | fs.W_OK)
@@ -257,7 +257,7 @@ module.exports = (api) => {
 
   api.prepareCoinPort = (coin, confName, fallbackPort) => {
     const coinLc = coin.toLowerCase()
-    const confLocation = `${api[`${coinLc}Dir`]}/${
+    const confLocation = `${api.paths[`${coinLc}Dir`]}/${
       confName ? confName : coin
     }.conf`;
     api.log(`attempting to read ${confLocation}...`, "native.process");
@@ -348,7 +348,7 @@ module.exports = (api) => {
   // Spawn dameon child process
   api.spawnDaemonChild = (daemon, coin, acOptions) => {
     try {
-      const daemonChild = execFile(`${api[daemon + 'Bin']}`, acOptions, {
+      const daemonChild = execFile(`${api.paths[daemon + 'Bin']}`, acOptions, {
         maxBuffer: 1024 * 1000000, // 1000 mb
       }, (error, stdout, stderr) => {
         api.writeLog(`stdout: ${stdout}`, 'native.debug');
@@ -363,7 +363,7 @@ module.exports = (api) => {
       daemonChild.on('exit', (exitCode) => {
         const errMsg = `${daemon} exited with code ${exitCode}${exitCode === 0 ? '' : ', crashed?'}`;
   
-        fs.appendFile(`${api.agamaDir}/${coin}.log`, errMsg, (err) => {
+        fs.appendFile(`${api.paths.agamaDir}/${coin}.log`, errMsg, (err) => {
           if (err) {
             api.writeLog(errMsg);
             api.log(errMsg, 'native.debug');
@@ -375,7 +375,7 @@ module.exports = (api) => {
       daemonChild.on('error', (err) => {
         const errMsg = `${daemon} error: ${err.message}`;
   
-        fs.appendFile(`${api.agamaDir}/${coin}.log`, errMsg, (err) => {
+        fs.appendFile(`${api.paths.agamaDir}/${coin}.log`, errMsg, (err) => {
           if (err) {
             api.writeLog(errMsg);
             api.log(errMsg, 'native.debug');
@@ -410,14 +410,14 @@ module.exports = (api) => {
 
     return new Promise((resolve, reject) => {
       // Set coin daemon bin location into memory if it doesn't exist there yet
-      if (api[`${daemon}Bin`] == null) {
+      if (api.paths[`${daemon}Bin`] == null) {
         api.log(`${daemon} binaries not used yet this session, saving their path...`, 'native.process');
         api.setDaemonPath(daemon)
-        api.log(`${daemon} binary path set to ${api[`${daemon}Bin`]}`, 'native.process');
+        api.log(`${daemon} binary path set to ${api.paths[`${daemon}Bin`]}`, 'native.process');
       }
 
       // Set coin data directory into memory if it doesnt exist yet
-      if (api[`${coinLc}Dir`] == null) {
+      if (api.paths[`${coinLc}Dir`] == null) {
         api.log(`${coin} data directory not already saved in memory...`, 'native.process');
 
         if (dirNames != null) {
@@ -427,11 +427,11 @@ module.exports = (api) => {
         }
 
         api.setCoinDir(coinLc, dirNames)
-        api.log(`${coin} dir path set to ${api[`${coinLc}Dir`]}...`, 'native.process');
+        api.log(`${coin} dir path set to ${api.paths[`${coinLc}Dir`]}...`, 'native.process');
       } else api.log(`${coin} data directory retrieved...`, 'native.process');
 
       if (global.USB_MODE) {
-        acOptions.push(`-datadir=${api[`${coin.toLowerCase()}Dir`]}`)
+        acOptions.push(`-datadir=${api.paths[`${coin.toLowerCase()}Dir`]}`)
       } else if (
         api.appConfig.coin.native.dataDir[coin] &&
         api.appConfig.coin.native.dataDir[coin].length > 0

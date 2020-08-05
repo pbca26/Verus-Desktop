@@ -22,7 +22,7 @@ module.exports = (api) => {
   }
 
   api.writeLog = (data) => {
-    const logLocation = `${api.agamaDir}/shepherd`;
+    const logLocation = `${api.paths.agamaDir}/shepherd`;
     const timeFormatted = new Date(Date.now()).toLocaleString('en-US', { hour12: false });
 
     if (api.appConfig.general.main.debug) {
@@ -111,7 +111,7 @@ module.exports = (api) => {
         const _time = secondsToString(Date.now() / 1000).replace(/\s+/g, '-');
 
         const err = fs.writeFileSync(
-          `${api.agamaDir}/shepherd/log/log-${_time}.json`,
+          `${api.paths.agamaDir}/shepherd/log/log-${_time}.json`,
           JSON.stringify(_log),
           'utf8'
         );
@@ -125,7 +125,7 @@ module.exports = (api) => {
         } else {
           const retObj = {
             msg: 'success',
-            result: `${api.agamaDir}/shepherd/log/log-${_time}.json`,
+            result: `${api.paths.agamaDir}/shepherd/log/log-${_time}.json`,
           };
           res.end(JSON.stringify(retObj));
         }
@@ -152,7 +152,7 @@ module.exports = (api) => {
    */
   /* api.post('/guilog', (req, res, next) => {
     if (api.checkToken(req.body.token)) {
-      const logLocation = `${api.agamaDir}/shepherd`;
+      const logLocation = `${api.paths.agamaDir}/shepherd`;
       const timestamp = req.body.timestamp;
 
       if (!api.guiLog[api.appSessionHash]) {
@@ -205,8 +205,8 @@ module.exports = (api) => {
     if (api.checkToken(req.query.token)) {
       const logExt = req.query.type === 'txt' ? 'txt' : 'json';
 
-      if (fs.existsSync(`${api.agamaDir}/shepherd/agamalog.${logExt}`)) {
-        fs.readFile(`${api.agamaDir}/shepherd/agamalog.${logExt}`, 'utf8', (err, data) => {
+      if (fs.existsSync(`${api.paths.agamaDir}/shepherd/agamalog.${logExt}`)) {
+        fs.readFile(`${api.paths.agamaDir}/shepherd/agamalog.${logExt}`, 'utf8', (err, data) => {
           if (err) {
             const retObj = {
               msg: 'error',
@@ -242,13 +242,12 @@ module.exports = (api) => {
   });*/
 
   api.printDirs = () => {
-    api.log(`agama dir: ${api.agamaDir}`, 'env');
-    api.log('--------------------------', 'env')
-    api.log(`komodo dir: ${api.komododBin}`, 'env');
-    api.log(`komodo bin: ${api.kmdDir}`, 'env');
-    api.writeLog(`agama dir: ${api.agamaDir}`);
-    api.writeLog(`komodo dir: ${api.komododBin}`);
-    api.writeLog(`komodo bin: ${api.kmdDir}`);
+    api.log("DIR PATHS:", 'env')
+    api.writeLog("DIR PATHS:")
+    for (const pathType in api.paths) {
+      api.log(`${pathType}: ${api.paths[pathType]}`, 'env')
+      api.writeLog(`${pathType}: ${api.paths[pathType]}`);
+    }
   }
 
   return api;

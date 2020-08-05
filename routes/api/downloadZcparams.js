@@ -19,16 +19,16 @@ let _inMemCheckList;
 module.exports = (api) => {
   api.zcashParamsExist = () => {
     let _checkList = {
-      rootDir: _fs.existsSync(api.zcashParamsDir),
-      provingKey: _fs.existsSync(`${api.zcashParamsDir}/sprout-proving.key`),
+      rootDir: _fs.existsSync(api.paths.zcashParamsDir),
+      provingKey: _fs.existsSync(`${api.paths.zcashParamsDir}/sprout-proving.key`),
       provingKeySize: false,
-      verifyingKey: _fs.existsSync(`${api.zcashParamsDir}/sprout-verifying.key`),
+      verifyingKey: _fs.existsSync(`${api.paths.zcashParamsDir}/sprout-verifying.key`),
       verifyingKeySize: false,
-      spendKey: _fs.existsSync(`${api.zcashParamsDir}/sapling-spend.params`),
+      spendKey: _fs.existsSync(`${api.paths.zcashParamsDir}/sapling-spend.params`),
       spendKeySize: false,
-      outputKey: _fs.existsSync(`${api.zcashParamsDir}/sapling-output.params`),
+      outputKey: _fs.existsSync(`${api.paths.zcashParamsDir}/sapling-output.params`),
       outputKeySize: false,
-      groth16Key: _fs.existsSync(`${api.zcashParamsDir}/sprout-groth16.params`),
+      groth16Key: _fs.existsSync(`${api.paths.zcashParamsDir}/sprout-groth16.params`),
       groth16KeySize: false,
       errors: false,
     };
@@ -40,11 +40,11 @@ module.exports = (api) => {
         _checkList.outputKey ||
         _checkList.groth16Key) {
       // verify each key size
-      const _provingKeySize = _checkList.provingKey ? fs.lstatSync(`${api.zcashParamsDir}/sprout-proving.key`) : 0;
-      const _verifyingKeySize = _checkList.verifyingKey ? fs.lstatSync(`${api.zcashParamsDir}/sprout-verifying.key`) : 0;
-      const _spendKeySize = _checkList.spendKey ? fs.lstatSync(`${api.zcashParamsDir}/sapling-spend.params`) : 0;
-      const _outputKeySize = _checkList.outputKey ? fs.lstatSync(`${api.zcashParamsDir}/sapling-output.params`) : 0;
-      const _groth16KeySize = _checkList.groth16Key ? fs.lstatSync(`${api.zcashParamsDir}/sprout-groth16.params`) : 0;
+      const _provingKeySize = _checkList.provingKey ? fs.lstatSync(`${api.paths.zcashParamsDir}/sprout-proving.key`) : 0;
+      const _verifyingKeySize = _checkList.verifyingKey ? fs.lstatSync(`${api.paths.zcashParamsDir}/sprout-verifying.key`) : 0;
+      const _spendKeySize = _checkList.spendKey ? fs.lstatSync(`${api.paths.zcashParamsDir}/sapling-spend.params`) : 0;
+      const _outputKeySize = _checkList.outputKey ? fs.lstatSync(`${api.paths.zcashParamsDir}/sapling-output.params`) : 0;
+      const _groth16KeySize = _checkList.groth16Key ? fs.lstatSync(`${api.paths.zcashParamsDir}/sprout-groth16.params`) : 0;
       
       if (Number(_provingKeySize.size) === fileSizes.proving) { // bytes
         _checkList.provingKeySize = true;
@@ -127,8 +127,8 @@ module.exports = (api) => {
    */
   api.post('/zcparamsdl', (req, res, next) => {
     if (api.checkToken(req.body.token)) {
-      // const dlLocation = api.zcashParamsDir + '/test';
-      const dlLocation = api.zcashParamsDir;
+      // const dlLocation = api.paths.zcashParamsDir + '/test';
+      const dlLocation = api.paths.zcashParamsDir;
       const dlOption = req.body.dloption;
       let _keysProgress = {
         proving: 0,

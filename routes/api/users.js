@@ -5,8 +5,8 @@ const Promise = require('bluebird');
 
 module.exports = (api) => {
   api.loadLocalUsers = () => {
-    if (fs.existsSync(`${api.agamaDir}/users.json`)) {
-      let localUsersJson = fs.readFileSync(`${api.agamaDir}/users.json`, 'utf8');
+    if (fs.existsSync(`${api.paths.agamaDir}/users.json`)) {
+      let localUsersJson = fs.readFileSync(`${api.paths.agamaDir}/users.json`, 'utf8');
       let localUsers
       
       try {
@@ -30,11 +30,11 @@ module.exports = (api) => {
   };
 
   api.saveLocalUsers = (users) => {
-    const usersFileName = `${api.agamaDir}/users.json`;
+    const usersFileName = `${api.paths.agamaDir}/users.json`;
 
     try {
       try {
-        _fs.accessSync(api.agamaDir, fs.constants.R_OK)
+        _fs.accessSync(api.paths.agamaDir, fs.constants.R_OK)
       } catch (e) {
         if (e.code == 'EACCES') {
           fsnode.chmodSync(usersFileName, '0666');
@@ -48,8 +48,8 @@ module.exports = (api) => {
 
       
       api.log('users.json write file is done', 'users');
-      api.log(`app users.json file is created successfully at: ${api.agamaDir}`, 'users');
-      api.writeLog(`app users.json file is created successfully at: ${api.agamaDir}`);
+      api.log(`app users.json file is created successfully at: ${api.paths.agamaDir}`, 'users');
+      api.writeLog(`app users.json file is created successfully at: ${api.paths.agamaDir}`);
     } catch (e) {
       api.log('error writing users', 'users');
       api.log(e, 'users');
@@ -58,11 +58,11 @@ module.exports = (api) => {
 
   api.backupLocalUsers = () => {
     const users = api.loadLocalUsers()
-    const usersFileName = `${api.agamaDir}/users_backup_${new Date().getTime()}.json`;
+    const usersFileName = `${api.paths.agamaDir}/users_backup_${new Date().getTime()}.json`;
 
     try {
       try {
-        _fs.accessSync(api.agamaDir, fs.constants.R_OK)
+        _fs.accessSync(api.paths.agamaDir, fs.constants.R_OK)
       } catch (e) {
         if (e.code == 'EACCES') {
           fsnode.chmodSync(usersFileName, '0666');
@@ -76,8 +76,8 @@ module.exports = (api) => {
 
       
       api.log(`${usersFileName} write file is done`, 'users');
-      api.log(`app ${usersFileName} file is created successfully at: ${api.agamaDir}`, 'users');
-      api.writeLog(`app ${usersFileName} file is created successfully at: ${api.agamaDir}`);
+      api.log(`app ${usersFileName} file is created successfully at: ${api.paths.agamaDir}`, 'users');
+      api.writeLog(`app ${usersFileName} file is created successfully at: ${api.paths.agamaDir}`);
     } catch (e) {
       api.log('error writing users', 'users');
       api.log(e, 'users');
