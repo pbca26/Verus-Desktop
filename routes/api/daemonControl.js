@@ -416,29 +416,39 @@ module.exports = (api) => {
         api.log(`${daemon} binary path set to ${api.paths[`${daemon}Bin`]}`, 'native.process');
       }
 
-      // Set coin data directory into memory if it doesnt exist yet
-      if (api.paths[`${coinLc}Dir`] == null) {
-        api.log(`${coin} data directory not already saved in memory...`, 'native.process');
-
-        if (dirNames != null) {
-          api.log(`saving ${coin} data directory as custom specified dir...`, 'native.process');
-        } else {
-          reject(new Error(`Could not start ${coin} daemon, no data directory found or specified!`))
-        }
-
-        api.setCoinDir(coinLc, dirNames)
-        api.log(`${coin} dir path set to ${api.paths[`${coinLc}Dir`]}...`, 'native.process');
-      } else api.log(`${coin} data directory retrieved...`, 'native.process');
-
-      if (global.USB_MODE) {
-        acOptions.push(`-datadir=${api.paths[`${coin.toLowerCase()}Dir`]}`)
-      } else if (
+      if (
         api.appConfig.coin.native.dataDir[coin] &&
         api.appConfig.coin.native.dataDir[coin].length > 0
       ) {
-        acOptions.push(`-datadir=${api.appConfig.coin.native.dataDir[chainTicker]}`)
-      }
+        api.log(`custom data dir detected, setting coin dir to ${api.appConfig.coin.native.dataDir[coin]}`, 'native.process');
+        
+        api.setCoinDir(coinLc, {
+          linux: api.appConfig.coin.native.dataDir[coin],
+          darwin: api.appConfig.coin.native.dataDir[coin],
+          win32: api.appConfig.coin.native.dataDir[coin]
+        }, true)
 
+        acOptions.push(`-datadir=${api.appConfig.coin.native.dataDir[coin]}`)
+      } else {
+        if (global.USB_MODE) {
+          acOptions.push(`-datadir=${api.paths[`${coin.toLowerCase()}Dir`]}`)
+        }
+
+        // Set coin data directory into memory if it doesnt exist yet
+        if (api.paths[`${coinLc}Dir`] == null) {
+          api.log(`${coin} data directory not already saved in memory...`, 'native.process');
+
+          if (dirNames != null) {
+            api.log(`saving ${coin} data directory as custom specified dir...`, 'native.process');
+          } else {
+            reject(new Error(`Could not start ${coin} daemon, no data directory found or specified!`))
+          }
+
+          api.setCoinDir(coinLc, dirNames)
+          api.log(`${coin} dir path set to ${api.paths[`${coinLc}Dir`]}...`, 'native.process');
+        } else api.log(`${coin} data directory retrieved...`, 'native.process');
+      }
+      
       api.log(`selected data: ${JSON.stringify(acOptions, null, '\t')}`, 'native.confd');
 
       api.initCoinDir(coinLc)

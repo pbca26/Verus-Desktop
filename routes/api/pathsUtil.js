@@ -179,7 +179,7 @@ const setDaemonPath = (api, daemonName) => {
   }
 }
 
-const setCoinDir = (api, coin, dirNames) => {
+const setCoinDir = (api, coin, dirNames, absolute = false) => {
   if (!api) api = { paths: {} };
   else if (!api.paths) api.paths = {};
   const { darwin, linux, win32 } = dirNames
@@ -188,15 +188,17 @@ const setCoinDir = (api, coin, dirNames) => {
   switch (os.platform()) {
     case 'darwin':
       fixPath();
-      api.paths[dirName] = global.USB_MODE
+      api.paths[dirName] = absolute
+        ? darwin
+        : global.USB_MODE
         ? `${global.HOME}/${darwin}`
         : `${global.HOME}/Library/Application Support/${darwin}`;
       return api;
     case 'linux':
-      api.paths[dirName] = `${global.HOME}/${linux}`
+      api.paths[dirName] = absolute ? linux : `${global.HOME}/${linux}`
       return api;
     case 'win32':
-      api.paths[dirName] = `${global.HOME}/${win32}`,
+      api.paths[dirName] = absolute ? win32 : `${global.HOME}/${win32}`,
       api.paths[dirName] = path.normalize(api.paths[dirName]);
       return api;
   }
