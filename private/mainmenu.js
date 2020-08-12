@@ -125,19 +125,19 @@ const template = [
       {
         label: 'Show Verus Desktop Wallet data folder',
         click (item, focusedWindow) {
-          shell.openItem(pathsAgama().agamaDir);
+          shell.openItem(pathsAgama().paths.agamaDir);
         }
       },
       {
         label: 'Show Verus data folder (default)',
         click (item, focusedWindow) {
-          shell.openItem(pathsDaemons().vrscDir);
+          shell.openItem(pathsDaemons().paths.vrscDir);
         }
       },
       {
         label: 'Show binary folder',
         click (item, focusedWindow) {
-          shell.openItem(pathsDaemons().komodocliDir);
+          shell.openItem(pathsDaemons().paths.komodocliDir);
         }
       },
       /*{
