@@ -20,6 +20,7 @@ api.logFileIndex = {};
 api.coindStdout = {};
 api.guiLog = {};
 api.rpcConf = {};
+api.customKomodoNetworks = {};
 api.appRuntimeLog = [];
 api.lockDownAddCoin = false;
 api._isWatchOnly = false;
@@ -70,10 +71,10 @@ api.pathsAgama();
 api.pathsDaemons();
 
 // core
+api = require('./api/data_files/jsonFileManager')(api);
 api = require('./api/log.js')(api);
 api = require('./api/config.js')(api);
 api = require('./api/users.js')(api);
-api = require('./api/nameCommitments.js')(api);
 api = require('./api/init.js')(api);
 
 api.createAgamaDirs();
@@ -142,6 +143,9 @@ api = require('./api/native/nameRegistration.js')(api);
 api = require('./api/native/idRegistration.js')(api);
 api = require('./api/native/idRevocation.js')(api);
 api = require('./api/native/idInformation.js')(api);
+api = require('./api/native/getCurrencies.js')(api);
+api = require('./api/native/getCurrency.js')(api);
+api = require('./api/native/currencyGraylist.js')(api);
 api = require('./api/native/idRecovery.js')(api);
 api = require('./api/native/signdata.js')(api);
 api = require('./api/native/verifydata.js')(api);
@@ -180,6 +184,9 @@ api = require('./api/coindWalletKeys.js')(api);
 api = require('./api/addressBook.js')(api);
 api = require('./api/dice.js')(api);
 api = require('./api/system.js')(api);
+
+// Utility APIs
+api = require('./api/utility_apis/csvExport.js')(api);
 
 // elections
 api = require('./api/elections.js')(api);

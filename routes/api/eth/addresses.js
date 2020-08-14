@@ -54,5 +54,29 @@ module.exports = (api) => {
     })
   });
 
+  api.post('/eth/get_privkey', (req, res, next) => {
+    const coin = req.body.chainTicker;
+    const token = req.body.token;
+
+    if (api.checkToken(token)) {
+      if (api.eth.wallet && api.eth.wallet.signingKey) {
+        res.end(JSON.stringify({
+          msg: 'success',
+          result: api.eth.wallet.signingKey.privateKey,
+        }));  
+      } else {
+        res.end(JSON.stringify({
+          msg: 'error',
+          result: `No privkey found for coin ${coin}`
+        }));  
+      }
+    } else {
+      res.end(JSON.stringify({
+        msg: 'error',
+        result: 'unauthorized access'
+      }));  
+    }
+  });
+
   return api;
 };

@@ -6,8 +6,8 @@ const fsnode = require('fs');
 
 module.exports = (api) => {
   api.loadLocalExchangesCache = () => {
-    if (fs.existsSync(`${api.agamaDir}/exchanges-cache.json`)) {
-      const localCache = fs.readFileSync(`${api.agamaDir}/exchanges-cache.json`, 'utf8');
+    if (fs.existsSync(`${api.paths.agamaDir}/exchanges-cache.json`)) {
+      const localCache = fs.readFileSync(`${api.paths.agamaDir}/exchanges-cache.json`, 'utf8');
 
       try {
         api.exchangesCache = JSON.parse(localCache);
@@ -36,13 +36,13 @@ module.exports = (api) => {
   };
 
   api.saveLocalExchangesCache = () => {
-    _fs.access(api.agamaDir, fs.constants.R_OK, (err) => {
+    _fs.access(api.paths.agamaDir, fs.constants.R_OK, (err) => {
       if (!err) {
         const FixFilePermissions = () => {
           return new Promise((resolve, reject) => {
             const result = 'exchanges-cache.json file permissions updated to Read/Write';
 
-            fsnode.chmodSync(`${api.agamaDir}/exchanges-cache.json`, '0666');
+            fsnode.chmodSync(`${api.paths.agamaDir}/exchanges-cache.json`, '0666');
 
             setTimeout(() => {
               api.log(result, 'exchanges.cache');
@@ -55,15 +55,15 @@ module.exports = (api) => {
         const FsWrite = () => {
           return new Promise((resolve, reject) => {
             const result = 'exchanges-cache.json write file is done';
-            const err = fs.writeFileSync(`${api.agamaDir}/exchanges-cache.json`, JSON.stringify(api.exchangesCache), 'utf8');
+            const err = fs.writeFileSync(`${api.paths.agamaDir}/exchanges-cache.json`, JSON.stringify(api.exchangesCache), 'utf8');
 
             if (err)
               return api.log(err, 'exchanges.cache');
 
-            fsnode.chmodSync(`${api.agamaDir}/exchanges-cache.json`, '0666');
+            fsnode.chmodSync(`${api.paths.agamaDir}/exchanges-cache.json`, '0666');
             setTimeout(() => {
               api.log(result, 'exchanges.cache');
-              api.log(`exchanges-cache.json file is created successfully at: ${api.agamaDir}`, 'exchanges.cache');
+              api.log(`exchanges-cache.json file is created successfully at: ${api.paths.agamaDir}`, 'exchanges.cache');
               resolve(result);
             }, 2000);
           });

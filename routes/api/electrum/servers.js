@@ -26,7 +26,7 @@ module.exports = (api) => {
     if (api.appConfig.general.electrum &&
         api.appConfig.general.electrum.syncServerListFromKv) {
       try {
-        let kvElectrumServersCache = fs.readFileSync(`${api.agamaDir}/kvElectrumServersCache.json`, 'utf8');
+        let kvElectrumServersCache = fs.readFileSync(`${api.paths.agamaDir}/kvElectrumServersCache.json`, 'utf8');
 
         // temp edge cases until kv edit is implemented
         kvElectrumServersCache.replace('tpc', 'tcp');
@@ -63,8 +63,8 @@ module.exports = (api) => {
   };
 
   api.loadElectrumServersList = () => {
-    if (fs.existsSync(`${api.agamaDir}/electrumServers.json`)) {
-      const localElectrumServersList = fs.readFileSync(`${api.agamaDir}/electrumServers.json`, 'utf8');
+    if (fs.existsSync(`${api.paths.agamaDir}/electrumServers.json`)) {
+      const localElectrumServersList = fs.readFileSync(`${api.paths.agamaDir}/electrumServers.json`, 'utf8');
 
       api.log('electrum servers list set from local file', 'spv.serverList');
       api.writeLog('electrum servers list set from local file');
@@ -84,13 +84,13 @@ module.exports = (api) => {
   };
 
   api.saveElectrumServersList = (list) => {
-    const electrumServersListFileName = `${api.agamaDir}/electrumServers.json`;
+    const electrumServersListFileName = `${api.paths.agamaDir}/electrumServers.json`;
 
     if (!list) {
       list = api.electrumServers;
     }
 
-    _fs.access(api.agamaDir, fs.constants.R_OK, (err) => {
+    _fs.access(api.paths.agamaDir, fs.constants.R_OK, (err) => {
       if (!err) {
         const FixFilePermissions = () => {
           return new Promise((resolve, reject) => {
@@ -110,12 +110,7 @@ module.exports = (api) => {
           return new Promise((resolve, reject) => {
             const result = 'electrumServers.json write file is done';
 
-            fs.writeFile(electrumServersListFileName,
-                        JSON.stringify(list)
-                        .replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}'), 'utf8', (err) => {
+            fs.writeFile(electrumServersListFileName, JSON.stringify(list), 'utf8', (err) => {
               if (err)
                 return api.log(err, 'spv.serverList');
             });
@@ -123,8 +118,8 @@ module.exports = (api) => {
             fsnode.chmodSync(electrumServersListFileName, '0666');
             setTimeout(() => {
               api.log(result, 'spv.serverList');
-              api.log(`electrumServers.json file is created successfully at: ${api.agamaDir}`, 'spv.serverList');
-              api.writeLog(`electrumServers.json file is created successfully at: ${api.agamaDir}`);
+              api.log(`electrumServers.json file is created successfully at: ${api.paths.agamaDir}`, 'spv.serverList');
+              api.writeLog(`electrumServers.json file is created successfully at: ${api.paths.agamaDir}`);
               resolve(result);
             }, 2000);
           });
@@ -137,9 +132,9 @@ module.exports = (api) => {
   };
 
   api.saveKvElectrumServersCache = (list) => {
-    const kvElectrumServersListFileName = `${api.agamaDir}/kvElectrumServersCache.json`;
+    const kvElectrumServersListFileName = `${api.paths.agamaDir}/kvElectrumServersCache.json`;
 
-    _fs.access(api.agamaDir, fs.constants.R_OK, (err) => {
+    _fs.access(api.paths.agamaDir, fs.constants.R_OK, (err) => {
       if (!err) {
         const FixFilePermissions = () => {
           return new Promise((resolve, reject) => {
@@ -159,12 +154,7 @@ module.exports = (api) => {
           return new Promise((resolve, reject) => {
             const result = 'kvElectrumServersCache.json write file is done';
 
-            fs.writeFile(kvElectrumServersListFileName,
-                        JSON.stringify(list)
-                        .replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}'), 'utf8', (err) => {
+            fs.writeFile(kvElectrumServersListFileName, JSON.stringify(list), 'utf8', (err) => {
               if (err)
                 return api.log(err, 'spv.serverList');
             });
@@ -172,8 +162,8 @@ module.exports = (api) => {
             fsnode.chmodSync(kvElectrumServersListFileName, '0666');
             setTimeout(() => {
               api.log(result, 'spv.serverList');
-              api.log(`kvElectrumServersCache.json file is created successfully at: ${api.agamaDir}`, 'spv.serverList');
-              api.writeLog(`kvElectrumServersCache.json file is created successfully at: ${api.agamaDir}`);
+              api.log(`kvElectrumServersCache.json file is created successfully at: ${api.paths.agamaDir}`, 'spv.serverList');
+              api.writeLog(`kvElectrumServersCache.json file is created successfully at: ${api.paths.agamaDir}`);
               resolve(result);
             }, 2000);
           });

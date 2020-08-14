@@ -74,8 +74,8 @@ module.exports = (api) => {
   };
 
   api.loadLocalSPVCache = () => {
-    if (fs.existsSync(`${api.agamaDir}/spv-cache.json`)) {
-      const localCache = fs.readFileSync(`${api.agamaDir}/spv-cache.json`, 'utf8');
+    if (fs.existsSync(`${api.paths.agamaDir}/spv-cache.json`)) {
+      const localCache = fs.readFileSync(`${api.paths.agamaDir}/spv-cache.json`, 'utf8');
 
       api.log('local spv cache loaded from local file', 'spv.cache');
 
@@ -94,9 +94,9 @@ module.exports = (api) => {
   };
 
   api.saveLocalSPVCache = () => {
-    const spvCacheFileName = `${api.agamaDir}/spv-cache.json`;
+    const spvCacheFileName = `${api.paths.agamaDir}/spv-cache.json`;
 
-    _fs.access(api.agamaDir, fs.constants.R_OK, (err) => {
+    _fs.access(api.paths.agamaDir, fs.constants.R_OK, (err) => {
       if (!err) {
         const FixFilePermissions = () => {
           return new Promise((resolve, reject) => {
@@ -117,11 +117,7 @@ module.exports = (api) => {
             const result = 'spv-cache.json write file is done';
 
             const err = fs.writeFileSync(spvCacheFileName,
-                        JSON.stringify(api.electrumCache)
-                        /*.replace(/,/g, ',\n') // format json in human readable form
-                        .replace(/":/g, '": ')
-                        .replace(/{/g, '{\n')
-                        .replace(/}/g, '\n}')*/, 'utf8');
+                        JSON.stringify(api.electrumCache), 'utf8');
 
             if (err)
               return api.log(err, 'spv.cache');
@@ -129,7 +125,7 @@ module.exports = (api) => {
             fsnode.chmodSync(spvCacheFileName, '0666');
             setTimeout(() => {
               api.log(result, 'spv.cache');
-              api.log(`spv-cache.json file is created successfully at: ${api.agamaDir}`, 'spv.cache');
+              api.log(`spv-cache.json file is created successfully at: ${api.paths.agamaDir}`, 'spv.cache');
               resolve(result);
             }, 2000);
           });

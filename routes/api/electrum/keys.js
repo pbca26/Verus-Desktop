@@ -332,7 +332,7 @@ module.exports = (api) => {
     res.end(JSON.stringify(retObj));
   });
 
-  api.post('/electrum/keys', (req, res, next) => {
+  /*api.post('/electrum/keys', (req, res, next) => {
     if (api.checkToken(req.body.token)) {
       let _matchingKeyPairs = 0;
       let _totalKeys = 0;
@@ -413,7 +413,7 @@ module.exports = (api) => {
 
       res.end(JSON.stringify(retObj));
     }
-  });
+  });*/
 
   api.getSpvFees = () => {
     let _fees = {};

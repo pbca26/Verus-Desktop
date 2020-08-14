@@ -3,6 +3,7 @@ const Promise = require('bluebird');
 const { ethTransactionsToBtc } = require('agama-wallet-lib/src/eth');
 const erc20ContractId = require('agama-wallet-lib/src/eth-erc20-contract-id');
 const decimals = require('agama-wallet-lib/src/eth-erc20-decimals');
+const { ETHERSCAN_API_KEY } = require('../../../keys/etherscan')
 
 module.exports = (api) => {  
   api.get('/eth/get_transactions', (req, res, next) => {
@@ -57,7 +58,7 @@ module.exports = (api) => {
         'startblock=0',
         'endblock=99999999',
         `sort=${sort}`,
-        'apikey=YourApiKeyToken',
+        `apikey=${ETHERSCAN_API_KEY}`,
       ];
       const _etherscanEndPoint = network === 'homestead' ? 'https://api.etherscan.io/api?' : `https://api-${network}.etherscan.io/api?`;
       const options = {
@@ -66,27 +67,33 @@ module.exports = (api) => {
       };
 
       request(options, (error, response, body) => {
-        if (response &&
-            response.statusCode &&
-            response.statusCode === 200) {
+        if (response && response.statusCode && response.statusCode === 200) {
           try {
             const _json = JSON.parse(body);
 
-            if ((_json.message === 'OK' || _json.message === 'No transactions found') &&
-                _json.result) {
+            if (
+              (_json.message === "OK" ||
+                _json.message === "No transactions found" ||
+                _json.status === "1" ||
+                _json.status === "0") &&
+              _json.result
+            ) {
               const _txs = ethTransactionsToBtc(_json.result, address);
               resolve(_txs);
             } else {
-              resolve(_json);
+              throw new Error("ETH transactions not OK.");
             }
           } catch (e) {
-            api.log('eth transactions parse error', 'eth.transactions');
-            api.log(e, 'eth.transactions');
-            throw e
+            api.log("eth transactions parse error", "eth.transactions");
+            api.log(e, "eth.transactions");
+            throw e;
           }
         } else {
-          api.log(`eth transactions error: unable to request ${network}`, 'eth.transactions');
-          throw new Error(`Unable to request ${network}`)
+          api.log(
+            `eth transactions error: unable to request ${network}`,
+            "eth.transactions"
+          );
+          throw new Error(`Unable to request ${network}`);
         }
       });
     });
@@ -104,7 +111,7 @@ module.exports = (api) => {
         //`page=${page}'
         //`offset=100&sort=asc
         `sort=${sort}`,
-        'apikey=YourApiKeyToken',
+        `apikey=${ETHERSCAN_API_KEY}`,
       ];
       const options = {
         url: 'https://api.etherscan.io/api?' + _url.join('&'),

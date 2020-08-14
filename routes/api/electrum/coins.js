@@ -9,9 +9,19 @@ module.exports = (api) => {
     }
   }
 
-  api.addElectrumCoin = (coin) => {
+  api.addElectrumCoin = (coin, customServers = [], tags = [], txFee) => {
     coin = coin.toLowerCase();
-    const servers = api.electrumServers[coin].serverList;
+    
+    if (customServers.length > 0 && txFee != null && !isNaN(txFee) && api.electrumServers[coin] == null) {
+      api.electrumServers[coin] = {
+        serverList: customServers,
+        txfee: txFee
+      }
+    }
+
+    const servers = api.electrumServers[coin] ? api.electrumServers[coin].serverList : []
+    if (tags.includes('is_komodo')) api.customKomodoNetworks[coin] = true
+
     // select random server
     let randomServer;
 
@@ -38,8 +48,8 @@ module.exports = (api) => {
         port: randomServer.port,
         proto: randomServer.proto,
       },
-      serverList: api.electrumServers[coin].serverList ? api.electrumServers[coin].serverList : 'none',
-      txfee: coin === 'btc' ? 'calculated' :api.electrumServers[coin].txfee,
+      serverList: servers ? servers : 'none',
+      txfee: coin === 'btc' ? 'calculated' : api.electrumServers[coin] ? api.electrumServers[coin].txfee : 0,
     };
 
     if (randomServer) {
@@ -87,7 +97,10 @@ module.exports = (api) => {
 
   api.post('/electrum/coins/activate', (req, res, next) => {
     if (api.checkToken(req.body.token)) {
-      const result = api.addElectrumCoin(req.body.chainTicker);
+      const { chainTicker, launchConfig } = req.body
+      const { customServers, tags, txFee } = launchConfig
+
+      const result = api.addElectrumCoin(chainTicker, customServers || [], tags, txFee);
 
       const retObj = {
         msg: 'success',
@@ -141,7 +154,7 @@ module.exports = (api) => {
     for (let key in api.electrumJSNetworks) {
       if (!api.electrumServers[key] ||
           (api.electrumServers[key] && !api.electrumServers[key].serverList)) {
-        api.log(`disable ${key}, coin config check not passed`, 'spv.coin');
+        //api.log(`disable ${key}, coin config check not passed`, 'spv.coin');
         delete api.electrumServers[key];
         delete api.electrumServersFlag[key];
       } else {

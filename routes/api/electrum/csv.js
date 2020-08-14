@@ -36,7 +36,7 @@ module.exports = (api) => {
                       `${txhistory.result[i].txid}`);
           }
 
-          const _fname = `${api.agamaDir}/shepherd/csv/${_coin.toUpperCase()}-${req.query.address}-${_time}.csv`;
+          const _fname = `${api.paths.agamaDir}/shepherd/csv/${_coin.toUpperCase()}-${req.query.address}-${_time}.csv`;
           const err = fs.writeFileSync(_fname, _csv.join('\r\n'), 'utf8');
 
           if (err) {
@@ -117,7 +117,7 @@ module.exports = (api) => {
                         `${txhistory.result[i].txid}`);
             }
 
-            const _fname = `${api.agamaDir}/shepherd/csv/${_coin.toUpperCase()}-native-all-${_time}.csv`;
+            const _fname = `${api.paths.agamaDir}/shepherd/csv/${_coin.toUpperCase()}-native-all-${_time}.csv`;
             const err = fs.writeFileSync(_fname, _csv.join('\r\n'), 'utf8');
 
             if (err) {

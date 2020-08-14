@@ -13,19 +13,29 @@ module.exports = (api) => {
 
         return api.native.callDaemon(coin, 'registernamecommitment', params, token)
       })
-      .then((nameCommitmentResult) => {
+      .then(async (nameCommitmentResult) => {
         if (
           nameCommitmentResult &&
           nameCommitmentResult.txid &&
           nameCommitmentResult.namereservation
         ) {
-          const localCommitments = api.loadLocalCommitments()
+          let localCommitments = await api.loadLocalCommitments()
           let saveCommitment = { ...nameCommitmentResult, controlAddress }
 
-          api.saveLocalCommitments({
-            ...localCommitments,
-            [coin]: localCommitments[coin] ? [...localCommitments[coin], saveCommitment] : [saveCommitment]
-          });
+          if (localCommitments[coin]) {
+            const existingIndex = localCommitments[coin].findIndex((value) => value.namereservation.name === name)
+            
+            if (existingIndex !== -1) {
+              localCommitments[coin][existingIndex] = saveCommitment
+            } else {
+              localCommitments[coin] = [...localCommitments[coin], saveCommitment]
+            }
+          } else {
+            localCommitments[coin] = [saveCommitment]
+          }
+
+          await api.saveLocalCommitments(localCommitments);
+
           resolve({...saveCommitment, coin});
         } else {
           throw new Error(nameCommitmentResult)
@@ -37,7 +47,6 @@ module.exports = (api) => {
     });
   };
 
-  //TODO: Check here with getidentity if identity and referral exists
   api.native.register_id_name_preflight = (coin, token, name, referralId) => {
     return new Promise((resolve, reject) => {      
       resolve({ namereservation: { coin, name, referral: referralId } });
@@ -88,12 +97,12 @@ module.exports = (api) => {
     })
   });
 
-  api.native.get_name_commitments = (coin) => {
+  api.native.get_name_commitments = async (coin) => {
     try {
-      const nameCommits = api.loadLocalCommitments()
+      const nameCommits = await api.loadLocalCommitments()
 
       if (nameCommits[coin] == undefined) {
-        api.saveLocalCommitments({
+        await api.saveLocalCommitments({
           ...nameCommits,
           [coin]: []
         });
@@ -107,7 +116,7 @@ module.exports = (api) => {
     }
   };
 
-  api.post('/native/get_name_commitments', (req, res, next) => {
+  api.post('/native/get_name_commitments', async (req, res, next) => {
     const { token, chainTicker } = req.body
     const coin = chainTicker
 
@@ -115,7 +124,7 @@ module.exports = (api) => {
       try {
         const retObj = {
           msg: 'success',
-          result: api.native.get_name_commitments(coin),
+          result: await api.native.get_name_commitments(coin),
         };
 
         res.end(JSON.stringify(retObj));
@@ -137,12 +146,12 @@ module.exports = (api) => {
     }
   });
 
-  api.native.delete_name_commitment = (name, coin) => {
+  api.native.delete_name_commitment = async (name, coin) => {
     try {
-      let nameCommits = api.loadLocalCommitments()
+      let nameCommits = await api.loadLocalCommitments()
       
       if (nameCommits[coin] == undefined) {
-        api.saveLocalCommitments({
+        await api.saveLocalCommitments({
           ...nameCommits,
           [coin]: []
         });
@@ -157,7 +166,7 @@ module.exports = (api) => {
           })
         }
         
-        api.saveLocalCommitments(newNameCommits);
+        await api.saveLocalCommitments(newNameCommits);
         return true
       }
     } catch (e) {
@@ -165,14 +174,14 @@ module.exports = (api) => {
     }
   }
 
-  api.post('/native/delete_name_commitment', (req, res, next) => {
+  api.post('/native/delete_name_commitment', async (req, res, next) => {
     const { token, chainTicker, name } = req.body
 
     if (api.checkToken(token)) {
       try {
         const retObj = {
           msg: 'success',
-          result: api.native.delete_name_commitment(name, chainTicker),
+          result: await api.native.delete_name_commitment(name, chainTicker),
         };
 
         res.end(JSON.stringify(retObj));
