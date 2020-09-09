@@ -237,6 +237,19 @@ module.exports = (api) => {
                                     formattedTx.vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
                                     formattedTx.opreturn = opreturn;
 
+                                    if (config.coin === 'BTC') {
+                                      formattedTx.segwit = (decodedTx.outputs != null &&
+                                        decodedTx.outputs.some(
+                                          (out) => out.scriptPubKey != null && out.scriptPubKey.type === "witnesspubkeyhash"
+                                        )) || Buffer.from(_rawtxJSON, "hex")[4] === 0x00;
+                                      
+                                      if (formattedTx.type === 'self' && formattedTx.segwit) {
+                                        formattedTx.type = 'sent'
+                                        formattedTx.address = 'Unsupported SegWit Address'
+                                      }
+                                    }
+                                    
+
                                     if (api.electrumCache[network] &&
                                         api.electrumCache[network].verboseTx &&
                                         api.electrumCache[network].verboseTx[transaction.tx_hash]) {
@@ -275,6 +288,24 @@ module.exports = (api) => {
                                     formattedTx[1].vinLen = decodedTx.inputs.length;
                                     formattedTx[1].vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
                                     formattedTx[1].opreturn = opreturn[1];
+
+                                    if (config.coin === 'BTC') {
+                                      formattedTx[0].segwit = (decodedTx.outputs != null &&
+                                        decodedTx.outputs.some(
+                                          (out) => out.scriptPubKey != null && out.scriptPubKey.type === "witnesspubkeyhash"
+                                        )) || Buffer.from(_rawtxJSON, "hex")[4] === 0x00;
+
+                                      formattedTx[1].segwit = formattedTx[0].segwit 
+
+                                      if (formattedTx[0].type === 'self' && formattedTx[0].segwit) {
+                                        formattedTx[0].type = 'sent'
+                                        formattedTx[0].address = 'Unsupported SegWit Address'
+                                      }
+                                      if (formattedTx[1].type === 'self' && formattedTx[1].segwit) {
+                                        formattedTx[1].type = 'sent'
+                                        formattedTx[0].address = 'Unsupported SegWit Address'
+                                      }
+                                    }
 
                                     if (api.electrumCache[network] &&
                                         api.electrumCache[network].verboseTx &&
