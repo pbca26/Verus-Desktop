@@ -193,8 +193,10 @@ module.exports = (api) => {
                   api.writeRpcPort(coin, confFile, fallbackPort),
                   api.writeRpcPassword(confFile),
                   api.writeRpcUser(confFile),
-                  api.WriteAddNode('185.25.48.72', confFile, '19424'),
-                  api.WriteAddNode('185.64.105.111', confFile, '19424')
+                  api.WriteAddNode('168.119.27.242', confFile, '18538'),
+                  api.WriteAddNode('5.9.224.250', confFile, '18538'),
+                  api.WriteAddNode('95.216.104.210', confFile, '18538'),
+                  api.WriteAddNode('135.181.68.2', confFile, '18538')
                 ]);
               } else {
                 return Promise.all([
