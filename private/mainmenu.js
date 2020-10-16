@@ -7,7 +7,9 @@ const {
   pathsDaemons,
 } = require('../routes/api/pathsUtil');
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs');
+const { createFetchBoostrapWindow } = require('../routes/children/fetch-bootstrap/window');
+const { appConfig } = require('../routes/api');
 
 const template = [
   {
@@ -138,6 +140,12 @@ const template = [
         label: 'Show binary folder',
         click (item, focusedWindow) {
           shell.openItem(pathsDaemons().paths.komodocliDir);
+        }
+      },
+      {
+        label: 'Bootstrap VRSC',
+        click (item, focusedWindow) {
+          createFetchBoostrapWindow('VRSC', appConfig)
         }
       },
       /*{

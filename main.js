@@ -290,7 +290,11 @@ function createAppCloseWindow() {
 
 	appCloseWindow.setResizable(false);
 
-	appCloseWindow.loadURL(appConfig.general.main.dev || process.argv.indexOf('devmode') > -1 ? `http://${appConfig.general.main.host}:${appConfig.general.main.agamaPort}/gui/startup/app-closing.html` : `file://${__dirname}/gui/startup/app-closing.html`);
+	appCloseWindow.loadURL(
+    appConfig.general.main.dev || process.argv.indexOf("devmode") > -1
+      ? `http://${appConfig.general.main.host}:${appConfig.general.main.agamaPort}/gui/startup/app-closing.html`
+      : `file://${__dirname}/gui/startup/app-closing.html`
+  );
 
   appCloseWindow.webContents.on('did-finish-load', () => {
     setTimeout(() => {
