@@ -3,6 +3,7 @@ const BrowserWindow = electron.BrowserWindow;
 const os = require('os');
 let agamaIcon;
 let fetchWindow = null
+const path = require('path');
 
 if (os.platform() === 'linux') {
 	agamaIcon = path.join(__dirname, '/assets/icons/vrsc_512x512x32.png');
@@ -32,6 +33,10 @@ function createFetchBoostrapWindow(chainTicker, appConfig) {
 		fetchWindow.webContents.on('did-finish-load', () => {
 			fetchWindow.show();
 		});
+
+		return new Promise((resolve, reject) => {
+			fetchWindow.on('closed', () => resolve())
+		})
 	}
 }
 
