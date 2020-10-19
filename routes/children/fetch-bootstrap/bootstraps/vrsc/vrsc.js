@@ -17,7 +17,8 @@ function setup(print) {
 
     if (init === 0) {
       const child = cp.spawn(api.paths[`vrsc-fetch-bootstrap`], [], {});
-      let questionAsked = false;
+      let askedOverwrite = false;
+      let checkedDataDir = false;
       let out = [];
       let canceled = false;
 
@@ -29,12 +30,26 @@ function setup(print) {
         out = out.concat(data.toString().split("\n"));
 
         if (
-          !questionAsked &&
+          !checkedDataDir &&
+          out.some((x) =>
+            x.includes("Enter blockchain data directory or leave blank for default:")
+          )
+        ) {
+          checkedDataDir = true
+
+          if (
+            api.appConfig.coin.native.dataDir['VRSC'] &&
+            api.appConfig.coin.native.dataDir['VRSC'].length > 0
+          ) { 
+            child.stdin.write(api.appConfig.coin.native.dataDir['VRSC'] + "\n");
+          } else child.stdin.write("\n");
+        } else if (
+          !askedOverwrite &&
           out.some((x) =>
             x.includes("Do you wish to overwrite blockchain data?")
           )
         ) {
-          questionAsked = true;
+          askedOverwrite = true;
           const answer = dialog.showMessageBox({
             type: "question",
             title: "Overwrite old blockchain data?",
@@ -62,14 +77,14 @@ function setup(print) {
       });
 
       child.on("close", (code) => {
-        if (!canceled && code === 1) {
+        if (!canceled && code === 0) {
           dialog.showMessageBox({
             type: "info",
             title: "Success!",
             message: "Finished running Verus bootstrap setup, you may now start Verus in native mode.",
             buttons: ["OK"],
           });
-        } else if (code !== 1) {
+        } else if (code !== 0) {
           dialog.showMessageBox({
             type: "error",
             title: "Error.",
