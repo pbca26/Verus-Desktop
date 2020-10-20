@@ -23,16 +23,13 @@ function createFetchBoostrapWindow(chainTicker, appConfig) {
 			show: false,
 			title: `Fetch ${chainTicker} Bootstrap`
 		});
+		fetchWindow.show();
 	
 		fetchWindow.loadURL(
 			appConfig.general.main.dev || process.argv.indexOf("devmode") > -1
 				? `http://${appConfig.general.main.host}:${appConfig.general.main.agamaPort}/gui/fetch-bootstrap/fetch-bootstrap.html?ticker=${chainTicker}`
 				: `file://${__dirname}/gui/fetch-bootstrap/fetch-bootstrap.html?ticker=${chainTicker}`
 		);
-	
-		fetchWindow.webContents.on('did-finish-load', () => {
-			fetchWindow.show();
-		});
 
 		return new Promise((resolve, reject) => {
 			fetchWindow.on('closed', () => resolve())
@@ -42,10 +39,15 @@ function createFetchBoostrapWindow(chainTicker, appConfig) {
 
 function closeBootstrapWindow() {
 	if (fetchWindow != null) {
-		fetchWindow.close()
+		setTimeout(() => {
+			fetchWindow.close()
+			fetchWindow = null
+		}, 500)
 	}
+}
 
-	fetchWindow = null
+function getBootstrapBrowserWindow() {
+	return fetchWindow
 }
 
 function setBootstrapWindowOnClose(onClose) {
@@ -60,5 +62,6 @@ function setBootstrapWindowOnClose(onClose) {
 module.exports = {
 	createFetchBoostrapWindow,
 	closeBootstrapWindow,
-	setBootstrapWindowOnClose
+	setBootstrapWindowOnClose,
+	getBootstrapBrowserWindow
 }
