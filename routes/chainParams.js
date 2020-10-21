@@ -303,12 +303,6 @@ const chainParams = {
 		ac_reward: 300000000,
 		addnode: ['136.243.58.134'],
 	},
-	RFOX: {
-		ac_name: "RFOX",
-		ac_supply: 1000000000,
-		ac_reward: 100000000,
-		addnode: ['78.47.196.146'],
-	},
 	ZEXO: {
 		ac_name: "ZEXO",
 		ac_reward: 1478310502,

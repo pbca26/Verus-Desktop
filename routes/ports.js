@@ -48,7 +48,6 @@ const assetChainPorts = {
   RICK: 28223,
   MORTY: 63812,
   MTST3: 56141,
-  RFOX: 32269,
   ZEXO: 33970,
   LABS: 40265,
   DP: 28388,
