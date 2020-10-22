@@ -117,7 +117,7 @@ const pathsDaemons = (api) => {
         api.paths.zcashParamsDir = `${global.HOME}/Library/Application Support/ZcashParams`,
         api.paths.chipsDir = `${global.HOME}/Library/Application Support/Chips`,
         api.paths.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/darwin/x64/marketmaker');
-        api.paths[`vrsc-fetch-bootstrap`] = path.join(__dirname, `../../assets/bin/osx/verusd/fetch-bootstrap.sh`);
+        api.paths[`vrsc-fetch-bootstrap`] = path.join(__dirname, `../../assets/bin/osx/verusd/fetch-bootstrap`);
         return api;
         break;
 
