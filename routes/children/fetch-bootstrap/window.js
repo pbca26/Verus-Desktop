@@ -28,7 +28,7 @@ function createFetchBoostrapWindow(chainTicker, appConfig) {
 		fetchWindow.loadURL(
 			appConfig.general.main.dev || process.argv.indexOf("devmode") > -1
 				? `http://${appConfig.general.main.host}:${appConfig.general.main.agamaPort}/gui/fetch-bootstrap/fetch-bootstrap.html?ticker=${chainTicker}`
-				: `file://${__dirname}/gui/fetch-bootstrap/fetch-bootstrap.html?ticker=${chainTicker}`
+				: `file://${__dirname}/../../../gui/fetch-bootstrap/fetch-bootstrap.html?ticker=${chainTicker}`
 		);
 
 		return new Promise((resolve, reject) => {
