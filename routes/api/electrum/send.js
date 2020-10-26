@@ -83,7 +83,7 @@ module.exports = (api) => {
   ) => {
     // TODO: unconf output(s) error message
     const network = api.validateChainTicker(chainTicker);
-    let ecl = await api.ecl(network);
+    let ecl = api.electrum.coinData[network.toLowerCase()].nspv ? {} : await api.ecl(network);
     let fee =
       lumpFee && Number(lumpFee) !== 0
         ? Number(lumpFee)
@@ -577,13 +577,35 @@ module.exports = (api) => {
         )
         .then(async (preflightObj) => {
           preflightRes = preflightObj;
-          const chainTickerUc = api.validateChainTicker(chainTicker)
-          const ecl = await api.ecl(chainTickerUc)
-          ecl.connect();
-          
-          let resObj = ecl.blockchainTransactionBroadcast(preflightRes.rawTx);
+          const chainTickerUc = api.validateChainTicker(chainTicker);
 
-          return resObj
+          if (api.electrum.coinData[chainTickerUc.toLowerCase()].nspv) {
+            const nspvBroadcast = await api.nspvRequest(
+              chainTickerUc.toLowerCase(),
+              'broadcast',
+              [preflightRes.rawTx],
+            );
+
+            if (nspvBroadcast &&
+                nspvBroadcast.result &&
+                nspvBroadcast.result === 'success' &&
+                nspvBroadcast.expected === nspvBroadcast.broadcast) {
+              api.updatePendingTxCache(chainTicker, nspvBroadcast.broadcast, {
+                pub: api.electrumKeys[chainTicker.toLowerCase()].pub,
+                rawtx: preflightRes.rawTx,
+                value: amount,
+              });
+
+              return nspvBroadcast.broadcast;
+            } else {
+              return { message: 'unable to broadcast a tx' };
+            }
+          } else {          
+            const ecl = await api.ecl(chainTickerUc);            
+            let resObj = ecl.blockchainTransactionBroadcast(preflightRes.rawTx);
+
+            return resObj;
+          }
         })
         .then(broadcastRes => {
           

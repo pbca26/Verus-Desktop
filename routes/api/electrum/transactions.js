@@ -405,7 +405,6 @@ module.exports = (api) => {
                                 } else {
                                   callback2();
                                 }
-                              }
 
                                 if (_decodedInput.txid !== '0000000000000000000000000000000000000000000000000000000000000000') {
                                   api.getTransaction(

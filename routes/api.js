@@ -59,6 +59,9 @@ const {
 api.electrumServers = electrumServers;
 api.electrumServersFlag = electrumServersFlag;
 api.electrumServersV1_4 = {};
+api.nspvProcesses = {};
+api.nspvPorts = {};
+api.dpowCoins = require('agama-wallet-lib/src/electrum-servers-dpow');
 
 api.CONNECTION_ERROR_OR_INCOMPLETE_DATA = 'connection error or incomplete data';
 
@@ -124,8 +127,15 @@ api = require('./api/electrum/csv.js')(api);
 api = require('./api/electrum/utils.js')(api);
 api = require('./api/electrum/remove')(api);
 api = require('./api/electrum/send.js')(api);
+api = require('./api/electrum/connectionManager.js')(api);
 
-//native
+// init electrum connection manager loop
+api.initElectrumManager();
+
+// nspv
+api = require('./api/electrum/nspv.js')(api);
+
+// native
 api = require('./api/native/addrBalance.js')(api);
 api = require('./api/native/coins')(api);
 api = require('./api/native/callDaemon')(api);

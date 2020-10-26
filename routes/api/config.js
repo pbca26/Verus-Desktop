@@ -97,11 +97,9 @@ module.exports = (api) => {
           api.log('config directory not found', 'settings');
         }
       }
-     
-      fs.writeFileSync(configFileName,
-                  JSON.stringify(appSettings), 'utf8');
 
-      
+      fs.writeFileSync(configFileName, JSON.stringify(appSettings, null, 2), 'utf8');
+
       api.log('config.json write file is done', 'settings');
       api.log(`app config.json file is created successfully at: ${api.paths.agamaDir}`, 'settings');
       api.writeLog(`app config.json file is created successfully at: ${api.paths.agamaDir}`);

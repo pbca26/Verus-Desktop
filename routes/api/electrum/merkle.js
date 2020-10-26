@@ -52,20 +52,13 @@ module.exports = (api) => {
           const _randomServer = randomServer.split(':');
           const _mainServer = mainServer.split(':');
 
-          let ecl = await api.ecl(network, {
-            ip: _mainServer[0],
-            port: _mainServer[1],
-            proto: _mainServer[2],
-          });
+          let ecl = await api.ecl(network);
 
           api.log(`main server: ${mainServer}`, 'spv.merkle');
           api.log(`verification server: ${randomServer}`, 'spv.merkle');
 
-          ecl.connect();
           ecl.blockchainTransactionGetMerkle(txid, height)
           .then((merkleData) => {
-            ecl.close();
-
             async function __verifyMerkle() {
               if (merkleData &&
                   merkleData.merkle &&
@@ -85,12 +78,9 @@ module.exports = (api) => {
                   port: _randomServer[1],
                   proto: _randomServer[2],
                 });
-                ecl.connect();
 
                 api.getBlockHeader(height, network, ecl)
                 .then((blockInfo) => {
-                  ecl.close();
-
                   if (JSON.stringify(blockInfo).indexOf('error') > -1) {
                     resolve(false);
                   } else {
@@ -116,7 +106,6 @@ module.exports = (api) => {
                   }
                 });
               } else {
-                ecl.close();
                 resolve(api.CONNECTION_ERROR_OR_INCOMPLETE_DATA);
               }
             };
