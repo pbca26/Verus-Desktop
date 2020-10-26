@@ -17,7 +17,7 @@ module.exports = (api) => {
     }
 
     try {
-      await fs.access(api.agamaDir, fs.constants.R_OK);
+      await fs.access(api.paths.agamaDir, fs.constants.R_OK);
     } catch (e) {
       if (e.code == "EACCES") {
         await fs.chmod(path, "0666");
@@ -28,13 +28,13 @@ module.exports = (api) => {
     }
 
     try {
-      const backupPath = `${api.backupDir}/${backupName}`
+      const backupPath = `${api.paths.backupDir}/${backupName}`
 
       if (await fs.exists(backupPath)) {
         throw new Error(`Backup at ${backupPath} already exists!`)
       }
 
-      await fs.copy(api.agamaDir, backupPath);
+      await fs.copy(api.paths.agamaDir, backupPath);
 
       api.log(
         `appdata backup created at ${backupPath}`,

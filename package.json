@@ -1,7 +1,7 @@
 {
   "name": "verus-desktop",
   "productName": "Verus-Desktop",
-  "version": "0.7.1",
+  "version": "0.7.2-3",
   "description": "Verus Desktop Wallet App",
   "main": "main.js",
   "scripts": {
@@ -39,7 +39,7 @@
   "devDependencies": {
     "cross-env": "^5.2.1",
     "electron": "^4.2.12",
-    "electron-builder": "22.6.1",
+    "electron-builder": "22.8.1",
     "electron-devtools-installer": "^2.2.4",
     "electron-rebuild": "^1.11.0"
   },
@@ -143,13 +143,17 @@
     }
   },
   "resolutions": {
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "js-yaml": "^3.13.1",
     "tar": "^4.4.8",
     "https-proxy-agent": "2.2.4",
     "mem": "4.0.0",
     "bin-links": "1.1.6",
     "yargs-parser": "^13.1.2",
-    "minimist": "^1.2.5"
+    "minimist": "^1.2.5",
+    "elliptic": "^6.5.3",
+    "bn.js": "^4.11.8",
+    "dot-prop": "^5.2.0",
+    "npm-registry-fetch": "^4.0.5"
   }
 }

@@ -12,7 +12,7 @@ const {
 
 module.exports = (api) => {
   api.loadLocalConfig = () => {
-    const configLocation = `${api.agamaDir}/config.json`
+    const configLocation = `${api.paths.agamaDir}/config.json`
 
     if (fs.existsSync(configLocation)) {
       try {
@@ -85,11 +85,11 @@ module.exports = (api) => {
   };
 
   api.saveLocalAppConf = (appSettings) => {
-    const configFileName = `${api.agamaDir}/config.json`;
+    const configFileName = `${api.paths.agamaDir}/config.json`;
 
     try {
       try {
-        _fs.accessSync(api.agamaDir, fs.constants.R_OK)
+        _fs.accessSync(api.paths.agamaDir, fs.constants.R_OK)
       } catch (e) {
         if (e.code == 'EACCES') {
           fsnode.chmodSync(configFileName, '0666');
@@ -101,8 +101,8 @@ module.exports = (api) => {
       fs.writeFileSync(configFileName, JSON.stringify(appSettings, null, 2), 'utf8');
 
       api.log('config.json write file is done', 'settings');
-      api.log(`app config.json file is created successfully at: ${api.agamaDir}`, 'settings');
-      api.writeLog(`app config.json file is created successfully at: ${api.agamaDir}`);
+      api.log(`app config.json file is created successfully at: ${api.paths.agamaDir}`, 'settings');
+      api.writeLog(`app config.json file is created successfully at: ${api.paths.agamaDir}`);
     } catch (e) {
       api.log('error writing config', 'settings');
       api.log(e, 'settings');

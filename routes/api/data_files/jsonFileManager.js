@@ -21,7 +21,7 @@ module.exports = (api) => {
    */
   api.loadJsonFile = async (relativePath, description, handleMissing = true) => {
     if (ALLOWED_PATHS_ARR.includes(relativePath)) {
-      const path = `${api.agamaDir}/${relativePath}`
+      const path = `${api.paths.agamaDir}/${relativePath}`
 
       if (fs.existsSync(path)) {
         let localString = await fs.readFile(path, 'utf8');
@@ -71,11 +71,11 @@ module.exports = (api) => {
     handleErrors = true
   ) => {
     if (ALLOWED_PATHS_ARR.includes(relativePath)) {
-      const path = `${api.agamaDir}/${relativePath}`;
+      const path = `${api.paths.agamaDir}/${relativePath}`;
 
       try {
         try {
-          await fs.access(api.agamaDir, fs.constants.R_OK);
+          await fs.access(api.paths.agamaDir, fs.constants.R_OK);
         } catch (e) {
           if (e.code == "EACCES") {
             await fs.chmod(path, "0666");

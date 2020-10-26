@@ -7,7 +7,9 @@ const {
   pathsDaemons,
 } = require('../routes/api/pathsUtil');
 const path = require('path')
-const fs = require('fs')
+const fs = require('fs');
+const { createFetchBoostrapWindow } = require('../routes/children/fetch-bootstrap/window');
+const { appConfig } = require('../routes/api');
 
 const template = [
   {
@@ -125,19 +127,25 @@ const template = [
       {
         label: 'Show Verus Desktop Wallet data folder',
         click (item, focusedWindow) {
-          shell.openItem(pathsAgama().agamaDir);
+          shell.openItem(pathsAgama().paths.agamaDir);
         }
       },
       {
         label: 'Show Verus data folder (default)',
         click (item, focusedWindow) {
-          shell.openItem(pathsDaemons().vrscDir);
+          shell.openItem(pathsDaemons().paths.vrscDir);
         }
       },
       {
         label: 'Show binary folder',
         click (item, focusedWindow) {
-          shell.openItem(pathsDaemons().komodocliDir);
+          shell.openItem(pathsDaemons().paths.komodocliDir);
+        }
+      },
+      {
+        label: 'Bootstrap VRSC',
+        click (item, focusedWindow) {
+          createFetchBoostrapWindow('VRSC', appConfig)
         }
       },
       /*{

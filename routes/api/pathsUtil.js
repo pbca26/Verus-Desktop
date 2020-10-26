@@ -3,19 +3,20 @@ const fixPath = require('fix-path');
 const os = require('os');
 
 const pathsAgama = (api) => {
-  if (!api) api = {};
+  if (!api) api = { paths: {} };
+  else if (!api.paths) api.paths = {};
 
   if (global.USB_MODE) {
     if (os.platform() === 'darwin') fixPath()
 
-    api.VerusDesktopDir = `${global.HOME}/Verus-Desktop`;
-    api.agamaDir = `${global.HOME}/Verus-Desktop/appdata`;
-    api.backupDir = `${global.HOME}/Verus-Desktop/backups`;
+    api.paths.VerusDesktopDir = `${global.HOME}/Verus-Desktop`;
+    api.paths.agamaDir = `${global.HOME}/Verus-Desktop/appdata`;
+    api.paths.backupDir = `${global.HOME}/Verus-Desktop/backups`;
 
     if (os.platform() === 'win32') {
-      api.VerusDesktopDir = path.normalize(api.VerusDesktopDir);
-      api.agamaDir = path.normalize(api.agamaDir);
-      api.backupDir = path.normalize(api.backupDir);
+      api.paths.VerusDesktopDir = path.normalize(api.paths.VerusDesktopDir);
+      api.paths.agamaDir = path.normalize(api.paths.agamaDir);
+      api.paths.backupDir = path.normalize(api.paths.backupDir);
     }
 
     return api;
@@ -23,30 +24,30 @@ const pathsAgama = (api) => {
     switch (os.platform()) {
       case "darwin":
         fixPath();
-        api.VerusDesktopDir = `${global.HOME}/Library/Application Support/Verus-Desktop`;
+        api.paths.VerusDesktopDir = `${global.HOME}/Library/Application Support/Verus-Desktop`;
 
-        api.agamaDir = `${global.HOME}/Library/Application Support/Verus-Desktop/appdata`;
-        api.backupDir = `${global.HOME}/Library/Application Support/Verus-Desktop/backups`;
+        api.paths.agamaDir = `${global.HOME}/Library/Application Support/Verus-Desktop/appdata`;
+        api.paths.backupDir = `${global.HOME}/Library/Application Support/Verus-Desktop/backups`;
         return api;
         break;
 
       case "linux":
-        api.VerusDesktopDir = `${global.HOME}/.verus-desktop`;
+        api.paths.VerusDesktopDir = `${global.HOME}/.verus-desktop`;
 
-        api.agamaDir = `${global.HOME}/.verus-desktop/appdata`;
-        api.backupDir = `${global.HOME}/.verus-desktop/backups`;
+        api.paths.agamaDir = `${global.HOME}/.verus-desktop/appdata`;
+        api.paths.backupDir = `${global.HOME}/.verus-desktop/backups`;
         return api;
         break;
 
       case "win32":
-        api.VerusDesktopDir = `${global.HOME}/Verus-Desktop`;
-        api.VerusDesktopDir = path.normalize(api.VerusDesktopDir);
+        api.paths.VerusDesktopDir = `${global.HOME}/Verus-Desktop`;
+        api.paths.VerusDesktopDir = path.normalize(api.paths.VerusDesktopDir);
 
-        api.agamaDir = `${global.HOME}/Verus-Desktop/appdata`;
-        api.agamaDir = path.normalize(api.agamaDir);
+        api.paths.agamaDir = `${global.HOME}/Verus-Desktop/appdata`;
+        api.paths.agamaDir = path.normalize(api.paths.agamaDir);
 
-        api.backupDir = `${global.HOME}/Verus-Desktop/backups`;
-        api.backupDir = path.normalize(api.backupDir);
+        api.paths.backupDir = `${global.HOME}/Verus-Desktop/backups`;
+        api.paths.backupDir = path.normalize(api.paths.backupDir);
         return api;
         break;
     }
@@ -54,52 +55,53 @@ const pathsAgama = (api) => {
 };
 
 const pathsDaemons = (api) => {
-  if (!api) api = {};
+  if (!api) api = { paths: {} };
+  else if (!api.paths) api.paths = {};
 
   if (global.USB_MODE) {
     switch (os.platform()) {
       case 'darwin':
         fixPath();
-        api.komodocliDir = path.join(__dirname, '../../assets/bin/osx'),
-        api.kmdDir = `${global.HOME}/Komodo`,
-        api.vrscDir = `${global.HOME}/Komodo/VRSC`,
-        api.verusDir = `${global.HOME}/Verus`,
-        api.verusTestDir = `${global.HOME}/VerusTest`,
-        api.zcashParamsDir = `${global.HOME}/ZcashParams`,
-        api.chipsDir = `${global.HOME}/Chips`,
-        api.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/darwin/x64/marketmaker');
+        api.paths.komodocliDir = path.join(__dirname, '../../assets/bin/osx'),
+        api.paths.kmdDir = `${global.HOME}/Komodo`,
+        api.paths.vrscDir = `${global.HOME}/Komodo/VRSC`,
+        api.paths.verusDir = `${global.HOME}/Verus`,
+        api.paths.verusTestDir = `${global.HOME}/VerusTest`,
+        api.paths.zcashParamsDir = `${global.HOME}/ZcashParams`,
+        api.paths.chipsDir = `${global.HOME}/Chips`,
+        api.paths.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/darwin/x64/marketmaker');
         return api;
         break;
-  
+
       case 'linux':
-        api.komodocliDir = path.join(__dirname, '../../assets/bin/linux64'),
-        api.kmdDir = `${global.HOME}/Komodo`,
-        api.vrscDir = `${global.HOME}/Komodo/VRSC`,
-        api.verusDir = `${global.HOME}/Verus`,
-        api.verusTestDir = `${global.HOME}/VerusTest`,
-        api.zcashParamsDir = `${global.HOME}/ZcashParams`,
-        api.chipsDir = `${global.HOME}/Chips`,
-        api.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/linux/x64/marketmaker');
+        api.paths.komodocliDir = path.join(__dirname, '../../assets/bin/linux64'),
+        api.paths.kmdDir = `${global.HOME}/Komodo`,
+        api.paths.vrscDir = `${global.HOME}/Komodo/VRSC`,
+        api.paths.verusDir = `${global.HOME}/Verus`,
+        api.paths.verusTestDir = `${global.HOME}/VerusTest`,
+        api.paths.zcashParamsDir = `${global.HOME}/ZcashParams`,
+        api.paths.chipsDir = `${global.HOME}/Chips`,
+        api.paths.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/linux/x64/marketmaker');
         return api;
         break;
-  
+
       case 'win32':
-        api.komodocliDir = path.join(__dirname, '../../assets/bin/win64'),
-        api.komodocliDir = path.normalize(api.komodocliDir),
-        api.kmdDir = `${global.HOME}/Komodo`,
-        api.kmdDir = path.normalize(api.kmdDir),
-        api.vrscDir = `${global.HOME}/Komodo/VRSC`,
-        api.vrscDir = path.normalize(api.vrscDir),
-        api.verusDir = `${global.HOME}/Verus`,
-        api.verusDir = path.normalize(api.verusDir),
-        api.verusTestDir = `${global.HOME}/VerusTest`,
-        api.verusTestDir = path.normalize(api.verusTestDir),
-        api.chipsDir = `${global.HOME}/Chips`,
-        api.chipsDir = path.normalize(api.chipsDir);
-        api.zcashParamsDir = `${global.HOME}/ZcashParams`;
-        api.zcashParamsDir = path.normalize(api.zcashParamsDir);
-        api.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/win32/x64/marketmaker.exe');
-        api.mmBin = path.normalize(api.mmBin);
+        api.paths.komodocliDir = path.join(__dirname, '../../assets/bin/win64'),
+        api.paths.komodocliDir = path.normalize(api.paths.komodocliDir),
+        api.paths.kmdDir = `${global.HOME}/Komodo`,
+        api.paths.kmdDir = path.normalize(api.paths.kmdDir),
+        api.paths.vrscDir = `${global.HOME}/Komodo/VRSC`,
+        api.paths.vrscDir = path.normalize(api.paths.vrscDir),
+        api.paths.verusDir = `${global.HOME}/Verus`,
+        api.paths.verusDir = path.normalize(api.paths.verusDir),
+        api.paths.verusTestDir = `${global.HOME}/VerusTest`,
+        api.paths.verusTestDir = path.normalize(api.paths.verusTestDir),
+        api.paths.chipsDir = `${global.HOME}/Chips`,
+        api.paths.chipsDir = path.normalize(api.paths.chipsDir);
+        api.paths.zcashParamsDir = `${global.HOME}/ZcashParams`;
+        api.paths.zcashParamsDir = path.normalize(api.paths.zcashParamsDir);
+        api.paths.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/win32/x64/marketmaker.exe');
+        api.paths.mmBin = path.normalize(api.paths.mmBin);
         return api;
         break;
     }
@@ -107,93 +109,101 @@ const pathsDaemons = (api) => {
     switch (os.platform()) {
       case 'darwin':
         fixPath();
-        api.komodocliDir = path.join(__dirname, '../../assets/bin/osx'),
-        api.kmdDir = `${global.HOME}/Library/Application Support/Komodo`,
-        api.vrscDir = `${global.HOME}/Library/Application Support/Komodo/VRSC`,
-        api.verusDir = `${global.HOME}/Library/Application Support/Verus`,
-        api.verusTestDir = `${global.HOME}/Library/Application Support/VerusTest`,
-        api.zcashParamsDir = `${global.HOME}/Library/Application Support/ZcashParams`,
-        api.chipsDir = `${global.HOME}/Library/Application Support/Chips`,
-        api.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/darwin/x64/marketmaker');
+        api.paths.komodocliDir = path.join(__dirname, '../../assets/bin/osx'),
+        api.paths.kmdDir = `${global.HOME}/Library/Application Support/Komodo`,
+        api.paths.vrscDir = `${global.HOME}/Library/Application Support/Komodo/VRSC`,
+        api.paths.verusDir = `${global.HOME}/Library/Application Support/Verus`,
+        api.paths.verusTestDir = `${global.HOME}/Library/Application Support/VerusTest`,
+        api.paths.zcashParamsDir = `${global.HOME}/Library/Application Support/ZcashParams`,
+        api.paths.chipsDir = `${global.HOME}/Library/Application Support/Chips`,
+        api.paths.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/darwin/x64/marketmaker');
+        api.paths[`vrsc-fetch-bootstrap`] = path.join(__dirname, `../../assets/bin/osx/verusd/fetch-bootstrap`);
         return api;
         break;
-  
+
       case 'linux':
-        api.komodocliDir = path.join(__dirname, '../../assets/bin/linux64'),
-        api.kmdDir = `${global.HOME}/.komodo`,
-        api.vrscDir = `${global.HOME}/.komodo/VRSC`,
-        api.verusDir = `${global.HOME}/.verus`,
-        api.verusTestDir = `${global.HOME}/.verustest`,
-        api.zcashParamsDir = `${global.HOME}/.zcash-params`,
-        api.chipsDir = `${global.HOME}/.chips`,
-        api.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/linux/x64/marketmaker');
+        api.paths.komodocliDir = path.join(__dirname, '../../assets/bin/linux64'),
+        api.paths.kmdDir = `${global.HOME}/.komodo`,
+        api.paths.vrscDir = `${global.HOME}/.komodo/VRSC`,
+        api.paths.verusDir = `${global.HOME}/.verus`,
+        api.paths.verusTestDir = `${global.HOME}/.verustest`,
+        api.paths.zcashParamsDir = `${global.HOME}/.zcash-params`,
+        api.paths.chipsDir = `${global.HOME}/.chips`,
+        api.paths.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/linux/x64/marketmaker');
+        api.paths[`vrsc-fetch-bootstrap`] = path.join(__dirname, `../../assets/bin/linux64/verusd/fetch-bootstrap`);
         return api;
         break;
-  
+
       case 'win32':
-        api.komodocliDir = path.join(__dirname, '../../assets/bin/win64'),
-        api.komodocliDir = path.normalize(api.komodocliDir),
-        api.kmdDir = `${global.HOME}/Komodo`,
-        api.kmdDir = path.normalize(api.kmdDir),
-        api.vrscDir = `${global.HOME}/Komodo/VRSC`,
-        api.vrscDir = path.normalize(api.vrscDir),
-        api.verusDir = `${global.HOME}/Verus`,
-        api.verusDir = path.normalize(api.verusDir),
-        api.verusTestDir = `${global.HOME}/VerusTest`,
-        api.verusTestDir = path.normalize(api.verusTestDir),
-        api.chipsDir = `${global.HOME}/Chips`,
-        api.chipsDir = path.normalize(api.chipsDir);
-        api.zcashParamsDir = `${global.HOME}/ZcashParams`;
-        api.zcashParamsDir = path.normalize(api.zcashParamsDir);
-        api.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/win32/x64/marketmaker.exe');
-        api.mmBin = path.normalize(api.mmBin);
+        api.paths.komodocliDir = path.join(__dirname, '../../assets/bin/win64'),
+        api.paths.komodocliDir = path.normalize(api.paths.komodocliDir),
+        api.paths.kmdDir = `${global.HOME}/Komodo`,
+        api.paths.kmdDir = path.normalize(api.paths.kmdDir),
+        api.paths.vrscDir = `${global.HOME}/Komodo/VRSC`,
+        api.paths.vrscDir = path.normalize(api.paths.vrscDir),
+        api.paths.verusDir = `${global.HOME}/Verus`,
+        api.paths.verusDir = path.normalize(api.paths.verusDir),
+        api.paths.verusTestDir = `${global.HOME}/VerusTest`,
+        api.paths.verusTestDir = path.normalize(api.paths.verusTestDir),
+        api.paths.chipsDir = `${global.HOME}/Chips`,
+        api.paths.chipsDir = path.normalize(api.paths.chipsDir);
+        api.paths.zcashParamsDir = `${global.HOME}/ZcashParams`;
+        api.paths.zcashParamsDir = path.normalize(api.paths.zcashParamsDir);
+        api.paths.mmBin = path.join(__dirname, '../../node_modules/marketmaker/bin/win32/x64/marketmaker.exe');
+        api.paths.mmBin = path.normalize(api.paths.mmBin);
+        api.paths[`vrsc-fetch-bootstrap`] = path.join(__dirname, `../../assets/bin/win64/verusd/fetch-bootstrap.bat`),
+        api.paths[`vrsc-fetch-bootstrap`] = path.normalize(api.paths[`vrsc-fetch-bootstrap`]);
         return api;
         break;
     }
   }
-  
+
 }
 
 const setDaemonPath = (api, daemonName) => {
-  if (!api) api = {};
+  if (!api) api = { paths: {} };
+  else if (!api.paths) api.paths = {};
 
   let binName = daemonName + "Bin";
   switch (os.platform()) {
     case 'darwin':
       fixPath();
-      api[binName] = path.join(__dirname, `../../assets/bin/osx/${daemonName}/${daemonName}`);
+      api.paths[binName] = path.join(__dirname, `../../assets/bin/osx/${daemonName}/${daemonName}`);
       return api;
       break;
     case 'linux':
-      api[binName] = path.join(__dirname, `../../assets/bin/linux64/${daemonName}/${daemonName}`);
+      api.paths[binName] = path.join(__dirname, `../../assets/bin/linux64/${daemonName}/${daemonName}`);
       return api;
       break;
     case 'win32':
-      api[binName] = path.join(__dirname, `../../assets/bin/win64/${daemonName}/${daemonName}.exe`),
-      api[binName] = path.normalize(api[binName]);
+      api.paths[binName] = path.join(__dirname, `../../assets/bin/win64/${daemonName}/${daemonName}.exe`),
+      api.paths[binName] = path.normalize(api.paths[binName]);
       return api;
       break;
   }
 }
 
-const setCoinDir = (api, coin, dirNames) => {
-  if (!api) api = {};
+const setCoinDir = (api, coin, dirNames, absolute = false) => {
+  if (!api) api = { paths: {} };
+  else if (!api.paths) api.paths = {};
   const { darwin, linux, win32 } = dirNames
 
   let dirName = coin + "Dir";
   switch (os.platform()) {
     case 'darwin':
       fixPath();
-      api[dirName] = global.USB_MODE
+      api.paths[dirName] = absolute
+        ? darwin
+        : global.USB_MODE
         ? `${global.HOME}/${darwin}`
         : `${global.HOME}/Library/Application Support/${darwin}`;
       return api;
     case 'linux':
-      api[dirName] = `${global.HOME}/${linux}`
+      api.paths[dirName] = absolute ? linux : `${global.HOME}/${linux}`
       return api;
     case 'win32':
-      api[dirName] = `${global.HOME}/${win32}`,
-      api[dirName] = path.normalize(api[dirName]);
+      api.paths[dirName] = absolute ? win32 : `${global.HOME}/${win32}`,
+      api.paths[dirName] = path.normalize(api.paths[dirName]);
       return api;
   }
 }

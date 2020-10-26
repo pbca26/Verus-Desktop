@@ -15,8 +15,8 @@ module.exports = (api) => {
       const chain = req.query.chain;
 
       // ref: https://gist.github.com/kendricktan/1e62495150ad236b38616d733aac4eb9
-      let _walletDatLocation = chain === 'komodo' || chain === 'KMD' || chain === 'null' ? `${api.kmdDir}/wallet.dat` : `${api.kmdDir}/${chain}/wallet.dat`;
-      _walletDatLocation = chain === 'CHIPS' ? `${api.chipsDir}/wallet.dat` : _walletDatLocation;
+      let _walletDatLocation = chain === 'komodo' || chain === 'KMD' || chain === 'null' ? `${api.paths.kmdDir}/wallet.dat` : `${api.paths.kmdDir}/${chain}/wallet.dat`;
+      _walletDatLocation = chain === 'CHIPS' ? `${api.paths.chipsDir}/wallet.dat` : _walletDatLocation;
 
       try {
         _fs.access(_walletDatLocation, fs.constants.R_OK, (err) => {

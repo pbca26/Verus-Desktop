@@ -22,16 +22,16 @@ module.exports = (api) => {
     const sysInfo = api.SystemInfo();
     const releaseInfo = api.appBasicInfo;
     const dirs = {
-      agamaDir: api.agamaDir,
-      kmdDir: api.kmdDir,
+      agamaDir: api.paths.agamaDir,
+      kmdDir: api.paths.kmdDir,
       komododBin: api.komododBin,
-      configLocation: `${api.agamaDir}/config.json`,
-      cacheLocation: `${api.agamaDir}/spv-cache.json`,
+      configLocation: `${api.paths.agamaDir}/config.json`,
+      cacheLocation: `${api.paths.agamaDir}/spv-cache.json`,
     };
     let spvCacheSize = '2 Bytes';
 
     try {
-      spvCacheSize = formatBytes(fs.lstatSync(`${api.agamaDir}/spv-cache.json`).size);
+      spvCacheSize = formatBytes(fs.lstatSync(`${api.paths.agamaDir}/spv-cache.json`).size);
     } catch (e) {}
 
     return {

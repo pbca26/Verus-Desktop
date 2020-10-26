@@ -25,39 +25,32 @@ module.exports = (api) => {
   // Returns an object with key = currency name and value = currency object
   // for every currency name mentioned in the input array
   api.native.get_currency_data_map = (chain, api_token, currencies = []) => {
-    return new Promise((resolve, reject) => {   
-      const get_currency_promise = (currency) => {
-        return new Promise((_resolve) => {
-          api.native.get_currency(chain, api_token, currency)
-          .then(res => _resolve(res))
-          .catch(err => {
-            api.log(`Error fetching currency: "${currency}"!`, "getCurrencies")
-            api.log(err, "getCurrencies")
-
-            _resolve(null)
-          })
-        })
+    return new Promise(async (resolve, reject) => {   
+      let res = {
+        currencyData: {},
+        currencyNames: {}
       }
 
-      Promise.all(currencies.map((currency) => get_currency_promise(currency)))
-      .then(currencyArray => {
-        let res = {
-          currencyData: {},
-          currencyNames: {}
-        }
+      for (let i = 0; i < currencies.length; i++) {
+        const currency = currencies[i]
 
-        currencyArray.forEach((value, index) => {
-          if (value != null && value.currencyid != null && value.name != null) {
-            res.currencyData[currencies[index]] = value
-            res.currencyNames[value.currencyid] = value.name
+        try {
+          const fullCurrencyObj = await api.native.get_currency(chain, api_token, currency)
+
+          if (
+            fullCurrencyObj.currencyid != null &&
+            fullCurrencyObj.name != null
+          ) {
+            res.currencyData[currency] = fullCurrencyObj
+            res.currencyNames[fullCurrencyObj.currencyid] = fullCurrencyObj.name
           }
-        })
-        
-        resolve(res)
-      })
-      .catch(e => {
-        throw (e)
-      })
+        } catch(e) {
+          api.log(`Error fetching currency: "${currency}"!`, "getCurrencies")
+          api.log(err, "getCurrencies")
+        }
+      }
+
+      resolve(res)
     });
   };
 

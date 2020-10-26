@@ -54,7 +54,7 @@ module.exports = (api) => {
           if (_customPinFilenameTest.test(pubkey)) {
             encrypt(req.body.string, _pin)
             .then((encryptedString) => {
-              fs.writeFile(`${api.agamaDir}/shepherd/pin/${pubkey}.pin`, encryptedString, (err) => {
+              fs.writeFile(`${api.paths.agamaDir}/shepherd/pin/${pubkey}.pin`, encryptedString, (err) => {
                 if (err) {
                   api.log('error writing pin file', 'pin');
 
@@ -120,8 +120,8 @@ module.exports = (api) => {
 
       if (_key &&
           _pubkey) {
-        if (fs.existsSync(`${api.agamaDir}/shepherd/pin/${_pubkey}.pin`)) {
-          fs.readFile(`${api.agamaDir}/shepherd/pin/${_pubkey}.pin`, 'utf8', async(err, data) => {
+        if (fs.existsSync(`${api.paths.agamaDir}/shepherd/pin/${_pubkey}.pin`)) {
+          fs.readFile(`${api.paths.agamaDir}/shepherd/pin/${_pubkey}.pin`, 'utf8', async(err, data) => {
             if (err) {
               const retObj = {
                 msg: 'error',
@@ -138,7 +138,7 @@ module.exports = (api) => {
                 .then((encryptedString) => {
                   api.log(`seed encrypt old method detected for file ${_pubkey}`, 'pin');
 
-                  fs.writeFile(`${api.agamaDir}/shepherd/pin/${_pubkey}.pin`, encryptedString, (err) => {
+                  fs.writeFile(`${api.paths.agamaDir}/shepherd/pin/${_pubkey}.pin`, encryptedString, (err) => {
                     if (err) {
                       api.log(`Error re-encrypt pin file ${_pubkey}`, 'pin');
 
@@ -213,8 +213,8 @@ module.exports = (api) => {
   /*
   api.get('/getpinlist', (req, res, next) => {
     if (api.checkToken(req.query.token)) {
-      if (fs.existsSync(`${api.agamaDir}/shepherd/pin`)) {
-        fs.readdir(`${api.agamaDir}/shepherd/pin`, (err, items) => {
+      if (fs.existsSync(`${api.paths.agamaDir}/shepherd/pin`)) {
+        fs.readdir(`${api.paths.agamaDir}/shepherd/pin`, (err, items) => {
           let _pins = [];
 
           for (let i = 0; i < items.length; i++) {
@@ -262,8 +262,8 @@ module.exports = (api) => {
       const pubkey = req.body.pubkey;
 
       if (pubkey) {
-        if (fs.existsSync(`${api.agamaDir}/shepherd/pin/${pubkey}.pin`)) {
-          fs.readFile(`${api.agamaDir}/shepherd/pin/${pubkey}.pin`, 'utf8', (err, data) => {
+        if (fs.existsSync(`${api.paths.agamaDir}/shepherd/pin/${pubkey}.pin`)) {
+          fs.readFile(`${api.paths.agamaDir}/shepherd/pin/${pubkey}.pin`, 'utf8', (err, data) => {
             if (err) {
               const retObj = {
                 msg: 'error',
@@ -273,7 +273,7 @@ module.exports = (api) => {
               res.end(JSON.stringify(retObj));
             } else {
               if (req.body.delete) {
-                fs.unlinkSync(`${api.agamaDir}/shepherd/pin/${pubkey}.pin`);
+                fs.unlinkSync(`${api.paths.agamaDir}/shepherd/pin/${pubkey}.pin`);
 
                 const retObj = {
                   msg: 'success',
@@ -287,7 +287,7 @@ module.exports = (api) => {
 
                 if (pubkeynew) {
                   if (_customPinFilenameTest.test(pubkeynew)) {
-                    fs.writeFile(`${api.agamaDir}/shepherd/pin/${pubkeynew}.pin`, data, (err) => {
+                    fs.writeFile(`${api.paths.agamaDir}/shepherd/pin/${pubkeynew}.pin`, data, (err) => {
                       if (err) {
                         api.log('error writing pin file', 'pin');
 
@@ -298,7 +298,7 @@ module.exports = (api) => {
 
                         res.end(JSON.stringify(retObj));
                       } else {
-                        fs.unlinkSync(`${api.agamaDir}/shepherd/pin/${pubkey}.pin`);
+                        fs.unlinkSync(`${api.paths.agamaDir}/shepherd/pin/${pubkey}.pin`);
 
                         const retObj = {
                           msg: 'success',

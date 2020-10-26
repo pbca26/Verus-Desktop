@@ -10,7 +10,7 @@ module.exports = (api) => {
     const data = req.body.data;
 
     if (api.checkToken(req.body.token)) {
-      fs.writeFile(`${api.agamaDir}/shepherd/addressBook.json`, JSON.stringify(data), (err) => {
+      fs.writeFile(`${api.paths.agamaDir}/shepherd/addressBook.json`, JSON.stringify(data), (err) => {
         if (err) {
           api.log('error writing address book file', 'addressBook');
 
@@ -42,8 +42,8 @@ module.exports = (api) => {
   //TODO: Re-evauluate as POST or eliminate use of API token
   /*api.get('/addressbook', (req, res, next) => {
     if (api.checkToken(req.query.token)) {
-      if (fs.existsSync(`${api.agamaDir}/shepherd/addressBook.json`)) {
-        fs.readFile(`${api.agamaDir}/shepherd/addressBook.json`, 'utf8', (err, data) => {
+      if (fs.existsSync(`${api.paths.agamaDir}/shepherd/addressBook.json`)) {
+        fs.readFile(`${api.paths.agamaDir}/shepherd/addressBook.json`, 'utf8', (err, data) => {
           if (err) {
             const retObj = {
               msg: 'error',

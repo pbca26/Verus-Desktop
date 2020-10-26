@@ -19,38 +19,38 @@ module.exports = (api) => {
 
       switch (_platform) {
         case "darwin":
-          api.kmdDir = global.USB_MODE
+          api.paths.kmdDir = global.USB_MODE
             ? `${global.HOME}/Komodo`
             : api.appConfig.general.native.dataDir.length
             ? api.appConfig.general.native.dataDir
             : `${process.env.HOME}/Library/Application Support/Komodo`;
           break;
         case "linux":
-          api.kmdDir = global.USB_MODE
+          api.paths.kmdDir = global.USB_MODE
             ? `${global.HOME}/Komodo`
             : api.appConfig.general.native.dataDir.length
             ? api.appConfig.general.native.dataDir
             : `${process.env.HOME}/.komodo`;
           break;
         case "win32":
-          api.kmdDir = global.USB_MODE
+          api.paths.kmdDir = global.USB_MODE
             ? `${global.HOME}/Komodo`
             : api.appConfig.general.native.dataDir.length
             ? api.appConfig.general.native.dataDir
             : `${process.env.APPDATA}/Komodo`;
-          api.kmdDir = path.normalize(api.kmdDir);
+          api.paths.kmdDir = path.normalize(api.paths.kmdDir);
           break;
       }
 
       if (_ac && api.appConfig.general.main.reservedChains.indexOf(_ac) === -1) {
-        _location = `${api.appConfig.general.main.pbaasTestmode ? api.verusTestDir : api.verusDir}/PBAAS/${_ac}`
+        _location = `${api.appConfig.general.main.pbaasTestmode ? api.paths.verusTestDir : api.paths.verusDir}/PBAAS/${_ac}`
       } else if (_herd === 'komodo') {
-        _location = api.kmdDir;
+        _location = api.paths.kmdDir;
       } else if (_ac) {
-        _location = `${api.kmdDir}/${_ac}`;
+        _location = `${api.paths.kmdDir}/${_ac}`;
 
         if (_ac === 'CHIPS') {
-          _location = api.chipsDir;
+          _location = api.paths.chipsDir;
         }
       }
 
@@ -84,7 +84,7 @@ module.exports = (api) => {
   /*api.get('/coind/stdout', (req, res) => {
     if (api.checkToken(req.query.token)) {
       const _daemonName = req.query.chain !== 'komodod' && req.query.chain.toLowerCase() !== 'kmd' ? req.query.chain : 'komodod';
-      const _daemonLogName = `${api.agamaDir}/${_daemonName}.log`;
+      const _daemonLogName = `${api.paths.agamaDir}/${_daemonName}.log`;
 
       api.readDebugLog(_daemonLogName, 'all')
       .then((result) => {
