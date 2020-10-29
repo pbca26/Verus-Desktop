@@ -91,45 +91,6 @@ module.exports = (api) => {
     }
   });
 
-  //TODO: Re-evauluate as POST or eliminate use of API token
-  /*
-  api.get('/electrum/coins/server/set', (req, res, next) => {
-    const _coin = req.query.coin.toLowerCase();
-
-    if (api.checkToken(req.query.token)) {
-      api.electrum.coinData[_coin].server = {
-        ip: req.query.address,
-        port: req.query.port,
-        proto: req.query.proto,
-      };
-
-      for (let key in api.electrumServers) {
-        if (key === _coin) {
-          api.electrumServers[key].address = req.query.address;
-          api.electrumServers[key].port = req.query.port;
-          api.electrumServers[key].proto = req.query.proto;
-          break;
-        }
-      }
-
-      // api.log(JSON.stringify(api.electrum.coinData[req.query.coin], null, '\t'), true);
-
-      const retObj = {
-        msg: 'success',
-        result: true,
-      };
-
-      res.end(JSON.stringify(retObj));
-    } else {
-      const retObj = {
-        msg: 'error',
-        result: 'unauthorized access',
-      };
-
-      res.end(JSON.stringify(retObj));
-    }
-  });*/
-
   api.getServerVersion = (port, ip, proto) => {
     const ecl = new api.electrumJSCore(
       port,
@@ -179,78 +140,6 @@ module.exports = (api) => {
       }
     });
   };
-
-  //TODO: Re-evauluate as POST or eliminate use of API token
-  /*
-  api.get('/electrum/servers/test', (req, res, next) => {
-    if (api.checkToken(req.query.token)) {
-      async function _serverTest() {
-        const ecl = await api.ecl(null, {
-          port: req.query.port,
-          ip: req.query.address,
-          proto: req.query.proto,
-        });
-
-        ecl.connect();
-        ecl.serverVersion()
-        .then((serverData) => {
-          ecl.close();
-          api.log('serverData', 'spv.server.test');
-          api.log(serverData, 'spv.server,test');
-
-          if (serverData &&
-              typeof serverData === 'string' &&
-              serverData.indexOf('Electrum') > -1) {
-            const retObj = {
-              msg: 'success',
-              result: true,
-            };
-
-            res.end(JSON.stringify(retObj));
-          } else if (
-            serverData &&
-            typeof serverData === 'object'
-          ) {
-            for (let i = 0; i < serverData.length; i++) {
-              if (serverData[i].indexOf('Electrum') > -1) {
-                const retObj = {
-                  msg: 'success',
-                  result: true,
-                };
-
-                res.end(JSON.stringify(retObj));
-
-                break;
-                return true;
-              }
-            }
-
-            const retObj = {
-              msg: 'error',
-              result: false,
-            };
-
-            res.end(JSON.stringify(retObj));
-          } else {
-            const retObj = {
-              msg: 'error',
-              result: false,
-            };
-
-            res.end(JSON.stringify(retObj));
-          }
-        });
-      };
-      _serverTest();
-    } else {
-      const retObj = {
-        msg: 'error',
-        result: 'unauthorized access',
-      };
-
-      res.end(JSON.stringify(retObj));
-    }
-  });*/
 
   // remote api switch wrapper
   api.ecl = async function(network, customElectrum) {

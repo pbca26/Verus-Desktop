@@ -21,49 +21,6 @@ module.exports = (api) => {
   }
 
   /*
-   *  type: GET
-   *
-   */
-  //TODO: Re-evauluate as POST or eliminate use of API token
-  /*api.get('/coinslist', (req, res, next) => {
-    if (api.checkToken(req.query.token)) {
-      if (fs.existsSync(`${api.paths.agamaDir}/shepherd/coinslist.json`)) {
-        fs.readFile(`${api.paths.agamaDir}/shepherd/coinslist.json`, 'utf8', (err, data) => {
-          if (err) {
-            const retObj = {
-              msg: 'error',
-              result: err,
-            };
-
-            res.end(JSON.stringify(retObj));
-          } else {
-            const retObj = {
-              msg: 'success',
-              result: data ? JSON.parse(data) : '',
-            };
-
-            res.end(JSON.stringify(retObj));
-          }
-        });
-      } else {
-        const retObj = {
-          msg: 'error',
-          result: 'coin list doesn\'t exist',
-        };
-
-        res.end(JSON.stringify(retObj));
-      }
-    } else {
-      const retObj = {
-        msg: 'error',
-        result: 'unauthorized access',
-      };
-
-      res.end(JSON.stringify(retObj));
-    }
-  });*/
-
-  /*
    *  type: POST
    *  params: payload
    */

@@ -39,44 +39,5 @@ module.exports = (api) => {
     }
   });
 
-  //TODO: Re-evauluate as POST or eliminate use of API token
-  /*api.get('/addressbook', (req, res, next) => {
-    if (api.checkToken(req.query.token)) {
-      if (fs.existsSync(`${api.paths.agamaDir}/shepherd/addressBook.json`)) {
-        fs.readFile(`${api.paths.agamaDir}/shepherd/addressBook.json`, 'utf8', (err, data) => {
-          if (err) {
-            const retObj = {
-              msg: 'error',
-              result: err,
-            };
-
-            res.end(JSON.stringify(retObj));
-          } else {
-            const retObj = {
-              msg: 'success',
-              result: JSON.parse(data),
-            };
-
-            res.end(JSON.stringify(retObj));
-          }
-        });
-      } else {
-        const retObj = {
-          msg: 'error',
-          result: 'address book doesn\'t exist',
-        };
-
-        res.end(JSON.stringify(retObj));
-      }
-    } else {
-      const retObj = {
-        msg: 'error',
-        result: 'unauthorized access',
-      };
-
-      res.end(JSON.stringify(retObj));
-    }
-  });*/
-
   return api;
 };

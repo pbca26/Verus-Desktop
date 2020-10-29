@@ -80,38 +80,6 @@ module.exports = (api) => {
     }
   });
 
-  //TODO: Re-evauluate as POST or eliminate use of API token
-  /*api.get('/coind/stdout', (req, res) => {
-    if (api.checkToken(req.query.token)) {
-      const _daemonName = req.query.chain !== 'komodod' && req.query.chain.toLowerCase() !== 'kmd' ? req.query.chain : 'komodod';
-      const _daemonLogName = `${api.paths.agamaDir}/${_daemonName}.log`;
-
-      api.readDebugLog(_daemonLogName, 'all')
-      .then((result) => {
-        const retObj = {
-          msg: 'success',
-          result: result,
-        };
-
-        res.end(JSON.stringify(retObj));
-      }, (result) => {
-        const retObj = {
-          msg: 'error',
-          result: result,
-        };
-
-        res.end(JSON.stringify(retObj));
-      });
-    } else {
-      const retObj = {
-        msg: 'error',
-        result: 'unauthorized access',
-      };
-
-      res.end(JSON.stringify(retObj));
-    }
-  });*/
-
   api.readDebugLog = (fileLocation, lastNLines) => {
     return new Promise((resolve, reject) => {
       if (lastNLines) {

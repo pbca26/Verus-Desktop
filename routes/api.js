@@ -111,19 +111,16 @@ api = require('./api/electrum/info.js')(api);
 api = require('./api/electrum/addresses.js')(api);
 api = require('./api/electrum/transactions.js')(api);
 api = require('./api/electrum/parseTxAddresses.js')(api);
-api = require('./api/electrum/decodeRawtx.js')(api);
 api = require('./api/electrum/block.js')(api);
 api = require('./api/electrum/createtx.js')(api);
 api = require('./api/electrum/createtx-split.js')(api);
 api = require('./api/electrum/createtx-multi.js')(api);
 api = require('./api/electrum/interest.js')(api);
 api = require('./api/electrum/listunspent.js')(api);
-api = require('./api/electrum/estimate.js')(api);
 api = require('./api/electrum/insight.js')(api);
 api = require('./api/electrum/cache.js')(api);
 api = require('./api/electrum/proxy.js')(api);
 api = require('./api/electrum/servers.js')(api);
-api = require('./api/electrum/csv.js')(api);
 api = require('./api/electrum/utils.js')(api);
 api = require('./api/electrum/remove')(api);
 api = require('./api/electrum/send.js')(api);
@@ -174,25 +171,19 @@ api = require('./api/network/supply/zec/zecCoinSupply')(api)
 api = require('./api/network/supply/coinSupply')(api)
 
 // core
-api = require('./api/dashboardUpdate.js')(api);
 api = require('./api/binsUtils.js')(api);
 api = require('./api/downloadUtil.js')(api);
 api = require('./api/pin.js')(api);
-api = require('./api/downloadBins.js')(api);
-api = require('./api/downloadPatch.js')(api);
 api = require('./api/downloadZcparams.js')(api);
 api = require('./api/coinsList.js')(api);
 api = require('./api/rpc.js')(api);
-api = require('./api/kickstart.js')(api);
 api = require('./api/debugLog.js')(api);
 api = require('./api/confMaxconnections.js')(api);
 api = require('./api/appInfo.js')(api);
 api = require('./api/conf.js')(api);
 api = require('./api/daemonControl.js')(api);
 api = require('./api/auth.js')(api);
-api = require('./api/coindWalletKeys.js')(api);
 api = require('./api/addressBook.js')(api);
-api = require('./api/dice.js')(api);
 api = require('./api/system.js')(api);
 
 // Utility APIs
@@ -228,15 +219,6 @@ api = require('./api/eth/createtx.js')(api);
 api = require('./api/eth/utils.js')(api);
 api = require('./api/eth/remove')(api);
 api = require('./api/eth/send.js')(api);
-
-// exchanges
-api.exchangesCache = {
-  coinswitch: {},
-};
-api = require('./api/exchange/exchange')(api);
-api = require('./api/exchange/coinswitch/coinswitch')(api);
-api = require('./api/exchange/changelly/changelly')(api);
-api.loadLocalExchangesCache();
 
 api.printDirs();
 

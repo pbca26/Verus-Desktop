@@ -175,57 +175,5 @@ module.exports = (api) => {
     });
   };
 
-  /*
-  //TODO: Re-evauluate as POST or eliminate use of API token
-  api.get('/electrum/kv/servers', (req, res, next) => {
-    if (api.checkToken(req.query.token)) {
-      api.electrum.get_transactions({
-        network: 'KV',
-        coin: 'KV',
-        address: 'RYTyftx9JEmzaXqQzpBBjJsHe9ZwLpzwCj',
-        kv: true,
-        maxlength: 100,
-        full: true,
-      })
-      .then((txhistory) => {
-        let _kvElectrum = {};
-
-        for (let i = 0; i < txhistory.result.length; i++) {
-          try {
-            const _kvElectrumItem = JSON.parse(txhistory.result[i].opreturn.kvDecoded.content.body);
-            _kvElectrum = deepmerge(_kvElectrum, _kvElectrumItem);
-          } catch (e) {
-            api.log(`kv electrum servers parse error ${e}`, 'spv.serverList');
-            // api.log(txhistory.result[i].opreturn.kvDecoded.content.body);
-          }
-        }
-
-        api.log(`kv electrum servers, got ${Object.keys(_kvElectrum).length} records`, 'spv.serverList');
-
-        for (let key in _ticker) {
-          _kvElectrum[_ticker[key]] = _kvElectrum[key];
-          delete _kvElectrum[key];
-        }
-
-        if (req.query.save) {
-          api.saveKvElectrumServersCache(_kvElectrum);
-        }
-
-        const retObj = {
-          msg: 'success',
-          result: _kvElectrum,
-        };
-        res.end(JSON.stringify(retObj));
-      });
-    } else {
-      const retObj = {
-        msg: 'error',
-        result: 'unauthorized access',
-      };
-
-      res.end(JSON.stringify(retObj));
-    }
-  });*/
-
   return api;
 };
