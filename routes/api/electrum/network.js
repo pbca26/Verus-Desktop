@@ -300,19 +300,8 @@ module.exports = (api) => {
             proto: api.electrum.coinData[network] && api.electrum.coinData[network].server.proto || _currentElectrumServer.proto,
           };
 
-          const IsElectrumProtocolV1_4 = await api.getServerVersion(
-            electrum.port,
-            electrum.ip,
-            electrum.proto
-          );
-          let _ecl = new api.electrumJSCore(
-            electrum.port,
-            electrum.ip,
-            electrum.proto,
-            api.appConfig.general.electrum.socketTimeout
-          );
-          if (IsElectrumProtocolV1_4) _ecl.setProtocolVersion('1.4');
-          return _ecl;
+          const ecl = await api.eclManager.getServer(network, customElectrum);
+          return ecl;
         }
       }
     }
