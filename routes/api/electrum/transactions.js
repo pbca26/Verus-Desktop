@@ -244,132 +244,133 @@ module.exports = (api) => {
                               }
                             }
 
-                          if (decodedTx &&
-                              decodedTx.inputs &&
-                              decodedTx.inputs.length) {
-                            async.eachOfSeries(decodedTx.inputs, (_decodedInput, ind2, callback2) => {
-                              const checkLoop = () => {
-                                index2++;
+                            if (decodedTx &&
+                                decodedTx.inputs &&
+                                decodedTx.inputs.length) {
+                              async.eachOfSeries(decodedTx.inputs, (_decodedInput, ind2, callback2) => {
+                                const checkLoop = () => {
+                                  index2++;
 
-                                if (index2 === decodedTx.inputs.length ||
-                                    index2 === api.appConfig.general.electrum.maxVinParseLimit) {
-                                  api.log(`tx history decode inputs ${decodedTx.inputs.length} | ${index2} => main callback`, 'spv.get_transactions');
-                                  const _parsedTx = {
-                                    network: decodedTx.network,
-                                    format: decodedTx.format,
-                                    inputs: txInputs,
-                                    outputs: decodedTx.outputs,
-                                    height: transaction.height,
-                                    timestamp: Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp,
-                                    confirmations: Number(transaction.height) === 0 || Number(transaction.height) === -1 ? 0 : currentHeight - transaction.height,
-                                  };
+                                  if (index2 === decodedTx.inputs.length ||
+                                      index2 === api.appConfig.general.electrum.maxVinParseLimit) {
+                                    api.log(`tx history decode inputs ${decodedTx.inputs.length} | ${index2} => main callback`, 'spv.get_transactions');
+                                    const _parsedTx = {
+                                      network: decodedTx.network,
+                                      format: decodedTx.format,
+                                      inputs: txInputs,
+                                      outputs: decodedTx.outputs,
+                                      height: transaction.height,
+                                      timestamp: Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp,
+                                      confirmations: Number(transaction.height) === 0 || Number(transaction.height) === -1 ? 0 : currentHeight - transaction.height,
+                                    };
 
-                                  const formattedTx = api.parseTransactionAddresses(
-                                    _parsedTx,
-                                    address,
-                                    network.toLowerCase() === 'kmd'
-                                  );
+                                    const formattedTx = api.parseTransactionAddresses(
+                                      _parsedTx,
+                                      address,
+                                      network.toLowerCase() === 'kmd'
+                                    );
 
-                                  if (formattedTx.type) {
-                                    formattedTx.height = transaction.height;
-                                    formattedTx.blocktime = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp;
-                                    formattedTx.timereceived = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timereceived;
-                                    formattedTx.hex = _rawtxJSON;
-                                    formattedTx.inputs = decodedTx.inputs;
-                                    formattedTx.outputs = decodedTx.outputs;
-                                    formattedTx.locktime = decodedTx.format.locktime;
-                                    formattedTx.vinLen = decodedTx.inputs.length;
-                                    formattedTx.vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
-                                    formattedTx.opreturn = opreturn;
+                                    if (formattedTx.type) {
+                                      formattedTx.height = transaction.height;
+                                      formattedTx.blocktime = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp;
+                                      formattedTx.timereceived = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timereceived;
+                                      formattedTx.hex = _rawtxJSON;
+                                      formattedTx.inputs = decodedTx.inputs;
+                                      formattedTx.outputs = decodedTx.outputs;
+                                      formattedTx.locktime = decodedTx.format.locktime;
+                                      formattedTx.vinLen = decodedTx.inputs.length;
+                                      formattedTx.vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
+                                      formattedTx.opreturn = opreturn;
 
-                                    if (config.coin === 'BTC') {
-                                      formattedTx.segwit = (decodedTx.outputs != null &&
-                                        decodedTx.outputs.some(
-                                          (out) => out.scriptPubKey != null && out.scriptPubKey.type === "witnesspubkeyhash"
-                                        )) || Buffer.from(_rawtxJSON, "hex")[4] === 0x00;
-                                      
-                                      if (formattedTx.type === 'self' && formattedTx.segwit) {
-                                        formattedTx.type = 'sent'
-                                        formattedTx.address = 'Unsupported SegWit Address'
-                                      }
-                                    }
-                                    
-
-                                    if (api.electrumCache[network] &&
-                                        api.electrumCache[network].verboseTx &&
-                                        api.electrumCache[network].verboseTx[transaction.tx_hash]) {
-                                      formattedTx.dpowSecured = false;
-
-                                      if (api.electrumCache[network].verboseTx[transaction.tx_hash].hasOwnProperty('confirmations')) {
-                                        if (api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations >= 2) {
-                                          formattedTx.dpowSecured = true;
-                                          formattedTx.rawconfirmations = formattedTx.confirmations;
-                                        } else {
-                                          formattedTx.confirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations;
-                                          formattedTx.rawconfirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].rawconfirmations;
-                                        }             
+                                      if (config.coin === 'BTC') {
+                                        formattedTx.segwit = (decodedTx.outputs != null &&
+                                          decodedTx.outputs.some(
+                                            (out) => out.scriptPubKey != null && out.scriptPubKey.type === "witnesspubkeyhash"
+                                          )) || Buffer.from(_rawtxJSON, "hex")[4] === 0x00;
+                                        
+                                        if (formattedTx.type === 'self' && formattedTx.segwit) {
+                                          formattedTx.type = 'sent'
+                                          formattedTx.address = 'Unsupported SegWit Address'
+                                        }
                                       }
 
-                                    _rawtx.push(formattedTx);
-                                  }
-                                } else {
-                                    formattedTx[0].height = transaction.height;
-                                    formattedTx[0].blocktime = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp;
-                                    formattedTx[0].timereceived = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timereceived;
-                                    formattedTx[0].hex = _rawtxJSON;
-                                    formattedTx[0].inputs = decodedTx.inputs;
-                                    formattedTx[0].outputs = decodedTx.outputs;
-                                    formattedTx[0].locktime = decodedTx.format.locktime;
-                                    formattedTx[0].vinLen = decodedTx.inputs.length;
-                                    formattedTx[0].vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
-                                    formattedTx[0].opreturn = opreturn[0];
-                                    formattedTx[1].height = transaction.height;
-                                    formattedTx[1].blocktime = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp;
-                                    formattedTx[1].timereceived = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timereceived;
-                                    formattedTx[1].hex = _rawtxJSON;
-                                    formattedTx[1].inputs = decodedTx.inputs;
-                                    formattedTx[1].outputs = decodedTx.outputs;
-                                    formattedTx[1].locktime = decodedTx.format.locktime;
-                                    formattedTx[1].vinLen = decodedTx.inputs.length;
-                                    formattedTx[1].vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
-                                    formattedTx[1].opreturn = opreturn[1];
+                                      if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                          api.electrumCache[network] &&
+                                          api.electrumCache[network].verboseTx &&
+                                          api.electrumCache[network].verboseTx[transaction.tx_hash]) {
+                                        formattedTx.dpowSecured = false;
 
-                                    if (config.coin === 'BTC') {
-                                      formattedTx[0].segwit = (decodedTx.outputs != null &&
-                                        decodedTx.outputs.some(
-                                          (out) => out.scriptPubKey != null && out.scriptPubKey.type === "witnesspubkeyhash"
-                                        )) || Buffer.from(_rawtxJSON, "hex")[4] === 0x00;
-
-                                      formattedTx[1].segwit = formattedTx[0].segwit 
-
-                                      if (formattedTx[0].type === 'self' && formattedTx[0].segwit) {
-                                        formattedTx[0].type = 'sent'
-                                        formattedTx[0].address = 'Unsupported SegWit Address'
+                                        if (api.electrumCache[network].verboseTx[transaction.tx_hash].hasOwnProperty('confirmations')) {
+                                          if (api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations >= 2) {
+                                            formattedTx.dpowSecured = true;
+                                            formattedTx.rawconfirmations = formattedTx.confirmations;
+                                          } else {
+                                            formattedTx.confirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations;
+                                            formattedTx.rawconfirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].rawconfirmations;
+                                          }             
+                                        }
                                       }
-                                      if (formattedTx[1].type === 'self' && formattedTx[1].segwit) {
-                                        formattedTx[1].type = 'sent'
-                                        formattedTx[0].address = 'Unsupported SegWit Address'
+
+                                      _rawtx.push(formattedTx);
+                                    } else {
+                                      formattedTx[0].height = transaction.height;
+                                      formattedTx[0].blocktime = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp;
+                                      formattedTx[0].timereceived = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timereceived;
+                                      formattedTx[0].hex = _rawtxJSON;
+                                      formattedTx[0].inputs = decodedTx.inputs;
+                                      formattedTx[0].outputs = decodedTx.outputs;
+                                      formattedTx[0].locktime = decodedTx.format.locktime;
+                                      formattedTx[0].vinLen = decodedTx.inputs.length;
+                                      formattedTx[0].vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
+                                      formattedTx[0].opreturn = opreturn[0];
+                                      formattedTx[1].height = transaction.height;
+                                      formattedTx[1].blocktime = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timestamp;
+                                      formattedTx[1].timereceived = Number(transaction.height) === 0 || Number(transaction.height) === -1 ? Math.floor(Date.now() / 1000) : blockInfo.timereceived;
+                                      formattedTx[1].hex = _rawtxJSON;
+                                      formattedTx[1].inputs = decodedTx.inputs;
+                                      formattedTx[1].outputs = decodedTx.outputs;
+                                      formattedTx[1].locktime = decodedTx.format.locktime;
+                                      formattedTx[1].vinLen = decodedTx.inputs.length;
+                                      formattedTx[1].vinMaxLen = api.appConfig.general.electrum.maxVinParseLimit;
+                                      formattedTx[1].opreturn = opreturn[1];
+
+                                      if (config.coin === 'BTC') {
+                                        formattedTx[0].segwit = (decodedTx.outputs != null &&
+                                          decodedTx.outputs.some(
+                                            (out) => out.scriptPubKey != null && out.scriptPubKey.type === "witnesspubkeyhash"
+                                          )) || Buffer.from(_rawtxJSON, "hex")[4] === 0x00;
+  
+                                        formattedTx[1].segwit = formattedTx[0].segwit 
+  
+                                        if (formattedTx[0].type === 'self' && formattedTx[0].segwit) {
+                                          formattedTx[0].type = 'sent'
+                                          formattedTx[0].address = 'Unsupported SegWit Address'
+                                        }
+                                        if (formattedTx[1].type === 'self' && formattedTx[1].segwit) {
+                                          formattedTx[1].type = 'sent'
+                                          formattedTx[0].address = 'Unsupported SegWit Address'
+                                        }
                                       }
-                                    }
 
-                                    if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
-                                        api.electrumCache[network] &&
-                                        api.electrumCache[network].verboseTx &&
-                                        api.electrumCache[network].verboseTx[transaction.tx_hash]) {
-                                      formattedTx[0].dpowSecured = false;
-                                      formattedTx[1].dpowSecured = false;
+                                      if (api.dpowCoins.indexOf(network.toUpperCase()) > -1 &&
+                                          api.electrumCache[network] &&
+                                          api.electrumCache[network].verboseTx &&
+                                          api.electrumCache[network].verboseTx[transaction.tx_hash]) {
+                                        formattedTx[0].dpowSecured = false;
+                                        formattedTx[1].dpowSecured = false;
 
-                                      if (api.electrumCache[network].verboseTx[transaction.tx_hash].hasOwnProperty('confirmations')) {
-                                        if (api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations >= 2) {
-                                          formattedTx[0].dpowSecured = true;
-                                          formattedTx[1].dpowSecured = true;
-                                          formattedTx[0].rawconfirmations = formattedTx[0].confirmations;
-                                          formattedTx[1].rawconfirmations = formattedTx[1].confirmations;
-                                        } else {
-                                          formattedTx[0].confirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations;
-                                          formattedTx[1].confirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations;
-                                          formattedTx[0].rawconfirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].rawconfirmations;
-                                          formattedTx[1].rawconfirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].rawconfirmations;
+                                        if (api.electrumCache[network].verboseTx[transaction.tx_hash].hasOwnProperty('confirmations')) {
+                                          if (api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations >= 2) {
+                                            formattedTx[0].dpowSecured = true;
+                                            formattedTx[1].dpowSecured = true;
+                                            formattedTx[0].rawconfirmations = formattedTx[0].confirmations;
+                                            formattedTx[1].rawconfirmations = formattedTx[1].confirmations;
+                                          } else {
+                                            formattedTx[0].confirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations;
+                                            formattedTx[1].confirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].confirmations;
+                                            formattedTx[0].rawconfirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].rawconfirmations;
+                                            formattedTx[1].rawconfirmations = api.electrumCache[network].verboseTx[transaction.tx_hash].rawconfirmations;
+                                          }
                                         }
                                       }
 
@@ -401,9 +402,9 @@ module.exports = (api) => {
 
                                     callback();
                                     api.log(`tx history main loop ${json.length} | ${index}`, 'spv.get_transactions');
+                                  } else {
+                                    callback2();
                                   }
-                                } else {
-                                  callback2();
                                 }
 
                                 if (_decodedInput.txid !== '0000000000000000000000000000000000000000000000000000000000000000') {
