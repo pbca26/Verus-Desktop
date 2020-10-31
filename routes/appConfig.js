@@ -53,7 +53,8 @@ const appConfig = {
           .concat(["KOMODO", "zcashd", "komodod", "chipsd"]),
         pbaasChains: [],
         pbaasTestmode: true,
-        enableVrsctest: false
+        enableVrsctest: false,
+        alwaysPromptUpdates: true
       },
       electrum: {
         maxVinParseLimit: 120,
@@ -125,6 +126,11 @@ const appConfig = {
           type: "checkbox",
           displayName: "Enable VRSCTEST",
           info: "Enables the Verus Testnet as a coin to add."
+        },
+        alwaysPromptUpdates: {
+          type: "checkbox",
+          displayName: "Notfy me about all app updates",
+          info: "Enables update notifications on app start for all updates, including non-mandatory."
         }
       },
       electrum: {

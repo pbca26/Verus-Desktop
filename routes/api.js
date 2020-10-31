@@ -79,6 +79,7 @@ api = require('./api/log.js')(api);
 api = require('./api/config.js')(api);
 api = require('./api/users.js')(api);
 api = require('./api/init.js')(api);
+api = require('./api/utility_apis/checkUpdates')(api);
 
 api.createAgamaDirs();
 api.appConfig = api.loadLocalConfig();

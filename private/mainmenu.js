@@ -1,15 +1,13 @@
 const { Menu } = require('electron');
 const electron = require('electron');
 const app = electron.app;
-const { shell, dialog } = require('electron');
+const { shell } = require('electron');
 const {
   pathsAgama,
   pathsDaemons,
 } = require('../routes/api/pathsUtil');
-const path = require('path')
-const fs = require('fs');
 const { createFetchBoostrapWindow } = require('../routes/children/fetch-bootstrap/window');
-const { appConfig } = require('../routes/api');
+const { appConfig, promptUpdate } = require('../routes/api');
 
 const template = [
   {
@@ -148,6 +146,12 @@ const template = [
           createFetchBoostrapWindow('VRSC', appConfig)
         }
       },
+      {
+        label: "Check for updates",
+        click (item, focusedWindow) {
+          promptUpdate(focusedWindow, true)
+        }
+      }
     ]
   }
 ];

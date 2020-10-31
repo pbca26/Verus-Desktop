@@ -9,18 +9,13 @@ const {
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 const path = require('path');
-const url = require('url');
 const os = require('os');
 const { randomBytes } = require('crypto');
-const md5 = require('agama-wallet-lib/src/crypto/md5');
-const exec = require('child_process').exec;
+const version = require('./version.json')
 const portscanner = require('portscanner');
 const osPlatform = os.platform();
-const fixPath = require('fix-path');
 const express = require('express');
 const bodyParser = require('body-parser');
-const fsnode = require('fs');
-const fs = require('fs-extra');
 const Promise = require('bluebird');
 const arch = require('arch');
 const chainParams = require('./routes/chainParams');
@@ -32,21 +27,11 @@ ipcMain.on('staticVar', (event, arg) => {
 	event.sender.send('staticVar', !arg ? staticVar : staticVar[arg]);
 });
 
-let localVersion;
-const localVersionFile = fs.readFileSync(`${__dirname}/version`, 'utf8');
-		
-localVersion = localVersionFile.split(localVersionFile.indexOf('\r\n') > -1 ? '\r\n' : '\n');
-
 global.USB_HOME_DIR = path.resolve(__dirname, './usb_home')
 
 // TODO: Implement in a way less likely to confuse people
 // USB Mode sets all necesarry files/folders to be in app parent directory
 global.USB_MODE = false
-  /*localVersion[2] &&
-  localVersion[2].split("=")[1] &&
-  localVersion[2].split("=")[1] === "usb"
-    ? true
-    : false;*/
 
 global.HOME = global.USB_MODE
     ? global.USB_HOME_DIR
@@ -72,7 +57,7 @@ api.setVar('nativeCoindList', nativeCoindList);*/
 const appBasicInfo = {
 	name: 'Verus Desktop',
 	mode: global.USB_MODE ? 'usb' : 'standard',
-	version: localVersion[0],
+	version: version.version,
 };
 
 app.setName(appBasicInfo.name);
@@ -369,7 +354,7 @@ function createAppCloseWindow() {
         const _assetChainPorts = require('./routes/ports.js');
         const nspvPorts = api.nspvPorts;
 
-				staticVar.arch = localVersion[1].indexOf('-spv-only') > -1 ? 'spv-only' : arch();
+				staticVar.arch = version.minVersion.indexOf('-spv-only') > -1 ? 'spv-only' : arch();
 				staticVar.appBasicInfo = appBasicInfo;
 				staticVar.assetChainPorts = _assetChainPorts;
 				staticVar.appConfigSchema = api.appConfigSchema;
@@ -382,7 +367,7 @@ function createAppCloseWindow() {
 
 				let _global = {
 					appConfig,
-					arch: localVersion[1].indexOf('-spv-only') > -1 ? 'spv-only' : arch(),
+					arch: version.minVersion.indexOf('-spv-only') > -1 ? 'spv-only' : arch(),
 					appBasicInfo,
 					appSessionHash,
 					testLocation: api.testLocation,
@@ -448,7 +433,9 @@ function createAppCloseWindow() {
 
 		  mainWindow.webContents.on('did-finish-load', () => {
 		    setTimeout(() => {
-		      mainWindow.show();
+					mainWindow.show();
+					
+					api.promptUpdate(mainWindow)
 		    }, 40);
 		  });
 
@@ -461,7 +448,7 @@ function createAppCloseWindow() {
 			      e.preventDefault();
 			    }
 			  }
-		  });*/
+			});*/
 
 			mainWindow.webContents.on('context-menu', (e, params) => { // context-menu returns params
 				const {
