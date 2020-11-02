@@ -160,34 +160,5 @@ module.exports = (api) => {
     });
   }
 
-  //TODO: Re-evauluate as POST or eliminate use of API token
-  /*
-  api.get('/electrum/merkle/verify', (req, res, next) => {
-    if (api.checkToken(req.query.token)) {
-      const _coin = req.query.coin;
-      const _txid = req.query.txid;
-      const _height = req.query.height;
-
-      api.verifyMerkleByCoin(_coin, _txid, _height)
-      .then((verifyMerkleRes) => {
-        const retObj = {
-          msg: 'success',
-          result: {
-            merkleProof: verifyMerkleRes,
-          },
-        };
-
-        res.end(JSON.stringify(retObj));
-      });
-    } else {
-      const retObj = {
-        msg: 'error',
-        result: 'unauthorized access',
-      };
-
-      res.end(JSON.stringify(retObj));
-    }
-  });*/
-
   return api;
 };
